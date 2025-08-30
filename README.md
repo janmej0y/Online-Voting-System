@@ -1,5 +1,5 @@
 
-# PulseVote — Online Voting System
+# EzeeVote — Online Voting System
 
 A simple, secure online voting system with **registration**, **login**, **one-vote-per-user** enforcement, and **live results**. Built with **Node.js + Express + SQLite** and a clean **Tailwind (CDN)** frontend.
 
