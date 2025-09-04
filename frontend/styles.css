@@ -1,42 +1,76 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0; padding: 0;
-    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    background: linear-gradient(135deg, #ff6ec7, #845ec2); 
     color: #fff; text-align: center;
-  }
-  
-  header { background: rgba(0,0,0,0.2); padding: 1rem; }
-  
-  h1, h2 { margin-bottom: 1rem; }
-  
-  form {
+}
+
+header { 
+    background: rgba(0,0,0,0.3); 
+    padding: 1rem; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+h1, h2 { 
+    margin-bottom: 1rem; 
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+}
+
+form {
     display: flex; flex-direction: column;
     max-width: 300px; margin: auto;
-  }
-  
-  input, button {
+}
+
+input, button {
     margin: 8px 0; padding: 10px;
-    border: none; border-radius: 6px;
-  }
-  
-  button {
-    background: #ff5722; color: #fff;
-    font-weight: bold; cursor: pointer;
-  }
-  
-  button:hover { background: #e64a19; }
-  
-  ul { list-style: none; padding: 0; }
-  
-  ul li { margin: 10px 0; }
-  
-  table {
-    margin: auto; border-collapse: collapse;
+    border: none; border-radius: 8px;
+    font-size: 1rem;
+}
+
+input {
+    background: rgba(255,255,255,0.9);
+    color: #333;
+}
+
+button {
+    background: linear-gradient(45deg, #ff6a00, #ee0979); 
+    color: #fff;
+    font-weight: bold; 
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+button:hover { 
+    background: linear-gradient(45deg, #f7971e, #ffd200); 
+}
+
+ul { 
+    list-style: none; padding: 0; 
+}
+
+ul li { 
+    margin: 10px 0; 
+    background: rgba(255,255,255,0.2);
+    padding: 8px;
+    border-radius: 6px;
+}
+
+table {
+    margin: auto; 
+    border-collapse: collapse;
     background: #fff; color: #333; width: 80%;
-    border-radius: 8px; overflow: hidden;
-  }
-  
-  th, td { padding: 10px; border-bottom: 1px solid #ccc; }
-  
-  footer { margin-top: 2rem; font-size: 0.9rem; }
-  
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+th, td { 
+    padding: 12px; 
+    border-bottom: 1px solid #ccc; 
+}
+
+footer { 
+    margin-top: 2rem; 
+    font-size: 0.9rem; 
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+}
