@@ -1,12 +1,11 @@
-
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 
-// Database file
+// Database file path
 const dbPath = path.resolve(__dirname, "voting.db");
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error("❌ Database error:", err.message);
+    console.error("❌ Error opening database:", err.message);
   } else {
     console.log("✅ Connected to SQLite database");
   }
@@ -14,6 +13,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 // Create tables
 db.serialize(() => {
+  // Users table
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,34 +23,43 @@ db.serialize(() => {
     )
   `);
 
+  // Candidates table
   db.run(`
     CREATE TABLE IF NOT EXISTS candidates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      party TEXT
+      party TEXT NOT NULL,
+      symbol TEXT
     )
   `);
 
+  // Votes table
   db.run(`
     CREATE TABLE IF NOT EXISTS votes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       candidate_id INTEGER NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (candidate_id) REFERENCES candidates(id),
-      UNIQUE(user_id)
+      FOREIGN KEY (candidate_id) REFERENCES candidates(id)
     )
   `);
 
-  // Insert sample candidates if none exist
-  db.all("SELECT COUNT(*) as count FROM candidates", (err, rows) => {
-    if (rows[0].count === 0) {
-      const stmt = db.prepare("INSERT INTO candidates (name, party) VALUES (?, ?)");
-      stmt.run("Alice Johnson", "Party A");
-      stmt.run("Bob Smith", "Party B");
-      stmt.run("Charlie Brown", "Party C");
+  // Insert default candidates if not exist
+  db.all("SELECT * FROM candidates", [], (err, rows) => {
+    if (err) {
+      console.error("❌ Error fetching candidates:", err.message);
+      return;
+    }
+
+    if (rows.length === 0) {
+      const stmt = db.prepare(
+        "INSERT INTO candidates (name, party, symbol) VALUES (?, ?, ?)"
+      );
+      stmt.run("Narendra Modi", "BJP", "/images/bjp.jpg");
+      stmt.run("Rahul Gandhi", "Congress", "/images/cong.png");
+      stmt.run("Mamata Banerjee", "TMC", "/images/tmclogo.png");
       stmt.finalize();
-      console.log("✅ Inserted sample candidates");
+      console.log("✅ Default candidates inserted");
     }
   });
 });

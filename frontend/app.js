@@ -49,7 +49,8 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
   }
 });
 
-// Load candidates
+
+// Load candidates with symbols
 async function loadCandidates() {
   document.getElementById("login-section").style.display = "none";
   document.getElementById("register-section").style.display = "none";
@@ -63,10 +64,15 @@ async function loadCandidates() {
 
   data.candidates.forEach(c => {
     const li = document.createElement("li");
-    li.innerHTML = `${c.name} (${c.party}) <button onclick="castVote(${c.id})">Vote</button>`;
+    li.innerHTML = `
+      <img src="${c.symbol}" alt="${c.party} logo" style="width:40px;height:40px;margin-right:10px;vertical-align:middle;">
+      <strong>${c.name}</strong> (${c.party})
+      <button onclick="castVote(${c.id})">Vote</button>
+    `;
     list.appendChild(li);
   });
 }
+
 
 // Cast vote
 async function castVote(candidateId) {
