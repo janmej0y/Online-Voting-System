@@ -1,79 +1,108 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0; padding: 0;
-    background: linear-gradient(135deg, #ff6ec7, #845ec2); 
-    color: #fff; text-align: center;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #1a1a1a, #111111); /* Dark neon background */
+    color: #fff;
+    text-align: center;
 }
 
+/* ===== Header ===== */
 header { 
-    background: rgba(0,0,0,0.3); 
+    background: rgba(0,0,0,0.6); 
     padding: 1rem; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 0 20px #00f6ff, 0 0 40px #ff00f6; /* neon glow */
+    border-bottom: 2px solid #00f6ff;
 }
 
 h1, h2 { 
     margin-bottom: 1rem; 
-    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+    text-shadow: 0 0 5px #00f6ff, 0 0 10px #ff00f6; /* neon text */
 }
 
+/* ===== Form ===== */
 form {
-    display: flex; flex-direction: column;
-    max-width: 300px; margin: auto;
+    display: flex; 
+    flex-direction: column;
+    max-width: 300px; 
+    margin: auto;
 }
 
 input, button {
-    margin: 8px 0; padding: 10px;
-    border: none; border-radius: 8px;
+    margin: 8px 0; 
+    padding: 10px;
+    border: none; 
+    border-radius: 12px;
     font-size: 1rem;
+    outline: none;
+    box-shadow: 0 0 5px #00f6ff;
 }
 
 input {
-    background: rgba(255,255,255,0.9);
-    color: #333;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid #00f6ff;
+    transition: 0.3s ease;
+}
+
+input:focus {
+    box-shadow: 0 0 15px #00f6ff, 0 0 25px #ff00f6;
+    border-color: #ff00f6;
 }
 
 button {
-    background: linear-gradient(45deg, #ff6a00, #ee0979); 
+    background: linear-gradient(45deg, #00f6ff, #ff00f6); 
     color: #fff;
     font-weight: bold; 
     cursor: pointer;
     transition: 0.3s ease;
+    text-shadow: 0 0 5px #fff;
 }
 
 button:hover { 
-    background: linear-gradient(45deg, #f7971e, #ffd200); 
+    background: linear-gradient(45deg, #ff00f6, #00f6ff); 
+    box-shadow: 0 0 20px #00f6ff, 0 0 40px #ff00f6;
 }
 
+/* ===== List ===== */
 ul { 
-    list-style: none; padding: 0; 
+    list-style: none; 
+    padding: 0; 
 }
 
 ul li { 
     margin: 10px 0; 
-    background: rgba(255,255,255,0.2);
-    padding: 8px;
-    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #00f6ff inset;
 }
 
+/* ===== Table ===== */
 table {
     margin: auto; 
     border-collapse: collapse;
-    background: #fff; color: #333; width: 80%;
-    border-radius: 12px; overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.8); 
+    color: #fff; 
+    width: 80%;
+    border-radius: 12px; 
+    overflow: hidden;
+    box-shadow: 0 0 20px #00f6ff, 0 0 40px #ff00f6;
 }
 
 th, td { 
     padding: 12px; 
-    border-bottom: 1px solid #ccc; 
+    border-bottom: 1px solid #00f6ff; 
 }
 
+/* ===== Footer ===== */
 footer { 
     margin-top: 2rem; 
     font-size: 0.9rem; 
     color: #fff;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+    text-shadow: 0 0 5px #00f6ff, 0 0 10px #ff00f6;
 }
+
 /* ===== Candidate Section ===== */
 .candidates {
     display: flex;
@@ -81,50 +110,55 @@ footer {
     gap: 20px;
     margin-top: 30px;
     flex-wrap: wrap;
-  }
-  
-  .candidate {
-    background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+
+.candidate {
+    background: linear-gradient(135deg, #00f6ff, #ff00f6);
     color: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 20px;
     text-align: center;
-    width: 200px;
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
-    transition: transform 0.2s ease-in-out;
-  }
-  
-  .candidate:hover {
+    width: 220px;
+    box-shadow: 0 0 15px #00f6ff, 0 0 25px #ff00f6;
+    transition: transform 0.2s ease-in-out, box-shadow 0.3s ease;
+}
+
+.candidate:hover {
     transform: scale(1.05);
-  }
-  
-  .symbol {
+    box-shadow: 0 0 25px #00f6ff, 0 0 50px #ff00f6;
+}
+
+.symbol {
     width: 100px;
     height: 100px;
     object-fit: contain;
-    border-radius: 8px;
-    background: #fff;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
     padding: 8px;
     margin-bottom: 15px;
-  }
-  
-  .candidate h3 {
+    box-shadow: 0 0 10px #fff;
+}
+
+.candidate h3 {
     margin: 10px 0;
-    font-size: 18px;
-  }
-  
-  .candidate button {
-    background: #fff;
-    color: #0072ff;
-    border: none;
+    font-size: 20px;
+    text-shadow: 0 0 5px #fff, 0 0 10px #00f6ff;
+}
+
+.candidate button {
+    background: #111; 
+    color: #00f6ff;
+    border: 2px solid #00f6ff;
     padding: 10px 15px;
-    border-radius: 8px;
+    border-radius: 12px;
     font-weight: bold;
     cursor: pointer;
-    transition: background 0.2s ease-in-out;
-  }
-  
-  .candidate button:hover {
-    background: #e3e3e3;
-  }
-  
+    transition: 0.3s ease;
+    text-shadow: 0 0 3px #00f6ff;
+}
+
+.candidate button:hover {
+    background: #00f6ff;
+    color: #111;
+    box-shadow: 0 0 15px #00f6ff, 0 0 30px #ff00f6;
+}
