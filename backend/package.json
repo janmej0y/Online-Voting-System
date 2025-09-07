@@ -1,14 +1,14 @@
 {
-  "name": "online-voting-system",
+  "name": "online-voting-backend",
   "version": "1.0.0",
-  "main": "backend/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node backend/server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5",
     "body-parser": "^1.20.2",
-    "sqlite3": "^5.1.6"
+    "cors": "^2.8.5",
+    "sqlite3": "^5.1.2"
   }
 }
