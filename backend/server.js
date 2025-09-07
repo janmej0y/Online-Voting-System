@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require("path");
 const db = require("./db"); // <-- db.js (SQLite)
 
 const app = express();
@@ -91,6 +92,15 @@ app.get("/api/results", (req, res) => {
   });
 });
 
+/* ----------------- SERVE FRONTEND ----------------- */
+app.use(express.static(path.join(__dirname, "../frontend")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
+
 /* ----------------- SERVER ----------------- */
-const PORT = 5000;
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () =>
+  console.log(`✅ Server running on http://localhost:${PORT}`)
+);
