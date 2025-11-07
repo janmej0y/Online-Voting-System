@@ -1,4 +1,4 @@
-const API_BASE = "/api";
+const API_BASE = "https://ezeevote.onrender.com"
 let currentUserId = null;
 
 /* --------------------------------------------------

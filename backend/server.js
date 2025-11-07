@@ -11,7 +11,10 @@ const nodemailer = require("nodemailer");
 const db = require("./db");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://online-voting-system-henna.vercel.app/"
+}));
+
 app.use(bodyParser.json());
 
 // serve uploaded profile images
