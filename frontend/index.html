@@ -2,17 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Online Voting System</title>
+  <title>EzeeVote - Online Voting System</title>
   <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <header><h1>🗳️ EzeeVote-Online Voting System</h1></header>
+
+  <header>
+    <h1>🗳️ EzeeVote - Smart Online Voting System</h1>
+  </header>
+
+  <!-- 🌙 Theme Switch -->
+  <button id="theme-toggle" class="theme-btn">🌙 Dark Mode</button>
 
   <main>
-    
-    <!-- Register -->
+
+    <!-- ✅ Register Section -->
     <section id="register-section">
-      <h2>Register</h2>
+      <h2>Create Your Account</h2>
       <form id="register-form">
         <input type="text" id="reg-name" placeholder="Full Name" required>
         <input type="email" id="reg-email" placeholder="Email" required>
@@ -22,7 +29,21 @@
       <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
     </section>
 
-    <!-- Login -->
+
+    <!-- ✅ OTP Verification -->
+    <section id="otp-section" style="display:none;">
+      <h2>Email Verification</h2>
+      <p>A 6-digit OTP has been sent to your email.</p>
+
+      <form id="otp-form">
+        <input type="email" id="otp-email" placeholder="Registered Email" required>
+        <input type="text" id="otp-code" placeholder="Enter OTP" required>
+        <button type="submit">Verify OTP</button>
+      </form>
+    </section>
+
+
+    <!-- ✅ Login Section -->
     <section id="login-section" style="display:none;">
       <h2>Login</h2>
       <form id="login-form">
@@ -33,32 +54,80 @@
       <p>No account? <a href="#" onclick="showRegister()">Register</a></p>
     </section>
 
-    <!-- Voting -->
+
+    <!-- ✅ Profile Section -->
+    <section id="profile-section" style="display:none;">
+      <h2>My Profile</h2>
+
+      <img id="profile-photo" src="" alt="Profile"
+           style="width:90px;height:90px;border-radius:50%;object-fit:cover;display:none;">
+
+      <form id="photo-form" enctype="multipart/form-data">
+        <input type="file" id="photo-file" name="photo" accept="image/*" required>
+        <button type="submit">Upload Photo</button>
+      </form>
+
+      <br>
+      <h3 id="user-name"></h3>
+    </section>
+
+
+    <!-- ✅ Voting Section -->
     <section id="voting-section" style="display:none;">
       <h2>Cast Your Vote</h2>
-      <div id="candidates-list"></div>
+
+      <div id="candidates-list" class="candidates"></div>
+
       <button onclick="viewResults()">View Results</button>
       <button onclick="logout()">Logout</button>
     </section>
 
-    <!-- Results -->
+
+    <!-- ✅ Results Section -->
     <section id="results-section" style="display:none;">
       <h2>Election Results</h2>
+
+      <canvas id="resultsChart"
+              style="width:100%;max-width:650px;margin:auto;"></canvas>
+
       <table>
         <thead>
-          <tr><th>Candidate</th><th>Party</th><th>Votes</th></tr>
+          <tr>
+            <th>Candidate</th>
+            <th>Party</th>
+            <th>Votes</th>
+          </tr>
         </thead>
         <tbody id="results-table"></tbody>
       </table>
+
       <button onclick="backToVote()">Back</button>
     </section>
+
   </main>
 
+
+  <!-- ✅ Vote Popup Modal -->
+  <div id="popup" class="popup" style="display:none;">
+    <div class="popup-content">
+      <p id="popup-message"></p>
+      <button onclick="closePopup()">OK</button>
+    </div>
+  </div>
+
+
+  <!-- ✅ Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ✅ Main App -->
+  <script src="app.js"></script>
+
   <footer>
-    <p>Made by JJ <a href="https://github.com/janmej0y" target="_blank">GitHub</a> | 
-       <a href="https://www.linkedin.com/in/janmej0y" target="_blank">LinkedIn</a></p>
+    <p>Made by JJ • 
+      <a href="https://github.com/janmej0y" target="_blank">GitHub</a> | 
+      <a href="https://www.linkedin.com/in/janmej0y" target="_blank">LinkedIn</a>
+    </p>
   </footer>
 
-  <script src="app.js"></script>
 </body>
 </html>
