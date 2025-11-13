@@ -1,125 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>EzeeVote • Smart Online Voting</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EzeeVote — Smart Online Voting</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="site-header">
-    <h1 class="logo">🗳️ EzeeVote</h1>
-    <div class="header-links">
-      <a href="https://github.com/janmej0y" target="_blank">GitHub</a>
-      <a href="https://www.linkedin.com/in/janmej0y" target="_blank">LinkedIn</a>
-    </div>
+  <header>
+    <h1>🗳️ EzeeVote</h1>
+    <button id="theme-toggle" class="theme-btn">🌙</button>
   </header>
 
-  <button id="theme-toggle" class="theme-btn" title="Toggle dark mode">🌙</button>
-
-  <main class="container">
-    <!-- Register -->
+  <main>
     <section id="register-section" class="card">
-      <h2>Create account</h2>
-      <form id="register-form" class="form">
-        <input id="reg-name" placeholder="Full name" required />
+      <h2>Create Account</h2>
+      <form id="register-form">
+        <input id="reg-name" type="text" placeholder="Full name" required />
         <input id="reg-email" type="email" placeholder="Email" required />
         <input id="reg-password" type="password" placeholder="Password" required />
-        <button type="submit" class="btn primary">Register</button>
+        <button type="submit">Register</button>
       </form>
-      <p class="muted">Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+      <p>Already have account? <a href="#" onclick="showLogin()">Login</a></p>
     </section>
 
-    <!-- OTP -->
     <section id="otp-section" class="card" style="display:none;">
-      <h2>Verify email</h2>
-      <p>We just sent a 6-digit OTP to your email.</p>
-      <form id="otp-form" class="form">
+      <h2>Verify Email (OTP)</h2>
+      <p>We sent a 6-digit code to your email</p>
+      <form id="otp-form">
         <input id="otp-email" type="email" placeholder="Registered email" required />
-        <div class="otp-row">
-          <input id="otp-code" placeholder="Enter OTP" required />
-          <button id="resend-otp" class="btn">Resend</button>
+        <div style="display:flex;gap:10px">
+          <input id="otp-code" type="text" placeholder="Enter OTP" required />
+          <button id="resend-otp" type="button">Resend</button>
         </div>
-        <button type="submit" class="btn primary">Verify OTP</button>
+        <button type="submit">Verify</button>
       </form>
     </section>
 
-    <!-- Login -->
     <section id="login-section" class="card" style="display:none;">
       <h2>Login</h2>
-      <form id="login-form" class="form">
+      <form id="login-form">
         <input id="login-email" type="email" placeholder="Email" required />
         <input id="login-password" type="password" placeholder="Password" required />
-        <button type="submit" class="btn primary">Login</button>
+        <button type="submit">Login</button>
       </form>
-      <p class="muted">
-        Forgot password? <a href="#" id="forgot-link">Reset</a> • No account? <a href="#" onclick="showRegister()">Register</a>
-      </p>
+      <p><a href="#" id="forgot-link">Forgot password?</a></p>
     </section>
 
-    <!-- Forgot / Reset -->
     <section id="forgot-section" class="card" style="display:none;">
       <h2>Forgot Password</h2>
-      <form id="forgot-form" class="form">
-        <input id="forgot-email" type="email" placeholder="Your registered email" required />
-        <button class="btn primary" type="submit">Send Reset Link</button>
+      <form id="forgot-form">
+        <input id="forgot-email" type="email" placeholder="Your email" required />
+        <button type="submit">Send reset link</button>
       </form>
-      <p class="muted"><a href="#" onclick="showLogin()">Back to login</a></p>
     </section>
 
-    <!-- Voting -->
-    <section id="voting-section" class="card" style="display:none;">
-      <div class="row between">
-        <h2>Cast Your Vote</h2>
-        <div id="user-info">
-          <img id="profile-photo" src="" alt="Profile" style="display:none;" />
-          <span id="user-name"></span>
-        </div>
-      </div>
-
-      <div id="candidates-list" class="candidates"></div>
-
-      <div class="actions">
-        <button class="btn" onclick="viewResults()">View Results</button>
-        <button class="btn" onclick="logout()">Logout</button>
-      </div>
+    <section id="reset-section" class="card" style="display:none;">
+      <h2>Reset Password</h2>
+      <form id="reset-form">
+        <input id="reset-token" type="text" placeholder="Reset token (from link)" required />
+        <input id="reset-password" type="password" placeholder="New password" required />
+        <button type="submit">Reset</button>
+      </form>
     </section>
 
-    <!-- Results -->
-    <section id="results-section" class="card" style="display:none;">
-      <h2>Election Results</h2>
-      <div class="chart-wrap"><canvas id="resultsChart"></canvas></div>
-      <table class="results-table">
-        <thead><tr><th>Candidate</th><th>Party</th><th>Votes</th></tr></thead>
-        <tbody id="results-table"></tbody>
-      </table>
-      <button class="btn" onclick="backToVote()">Back</button>
-    </section>
-
-    <!-- Profile upload -->
     <section id="profile-section" class="card" style="display:none;">
       <h2>My Profile</h2>
-      <img id="profile-photo-large" src="" style="display:none;" />
-      <h3 id="profile-name"></h3>
-      <form id="photo-form" class="form" enctype="multipart/form-data">
-        <input type="file" id="photo-file" accept="image/*" />
-        <button class="btn" type="submit">Upload Photo</button>
+      <img id="profile-photo" src="" alt="Profile" style="display:none" />
+      <form id="photo-form">
+        <input id="photo-file" type="file" accept="image/*" />
+        <button type="submit">Upload</button>
       </form>
+      <h3 id="user-name"></h3>
+    </section>
+
+    <section id="voting-section" class="card" style="display:none;">
+      <h2>Cast Vote</h2>
+      <div id="candidates-list" class="candidates"></div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button onclick="viewResults()">View Results</button>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </section>
+
+    <section id="results-section" class="card" style="display:none;">
+      <h2>Results</h2>
+      <canvas id="resultsChart" style="width:100%;max-width:650px;height:300px;"></canvas>
+      <table id="results-table"></table>
+      <button onclick="backToVote()">Back</button>
     </section>
   </main>
 
-  <!-- Popup -->
-  <div id="popup" class="popup" style="display:none;">
-    <div class="popup-content">
-      <p id="popup-message"></p>
-      <button onclick="closePopup()" class="btn">OK</button>
-    </div>
-  </div>
+  <div id="popup" class="popup" style="display:none;"><div id="popup-message"></div><button onclick="closePopup()">OK</button></div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
-  <footer class="site-footer">
-    <p>Made by JANMEJOY — <a href="https://github.com/janmej0y" target="_blank">GitHub</a> | <a href="https://www.linkedin.com/in/janmej0y" target="_blank">LinkedIn</a></p>
-  </footer>
 </body>
 </html>

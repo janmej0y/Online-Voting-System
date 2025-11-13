@@ -1,110 +1,66 @@
 // backend/server.js
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
 const bodyParser = require("body-parser");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const multer = require("multer");
+const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const db = require("./db");
 
 const app = express();
 app.use(bodyParser.json());
 
-// ----------------- CORS -----------------
-// replace with your Vercel domain or keep "*" while testing
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "https://online-voting-system-henna.vercel.app";
+// CORS: set your frontend origin(s) here (Vercel URL or local)
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5500";
 app.use(cors({
   origin: FRONTEND_ORIGIN,
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"]
 }));
 
-// ----------------- STATIC -----------------
-app.use('/images', express.static(path.join(__dirname, "../frontend/images"))); // candidate symbols
+// static images (candidate images inside frontend/images)
+app.use('/images', express.static(path.join(__dirname, "../frontend/images")));
+
+// uploads for profile photos
 const UPLOAD_DIR = path.join(__dirname, "uploads");
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR);
-app.use("/uploads", express.static(UPLOAD_DIR));
+app.use('/uploads', express.static(UPLOAD_DIR));
 
-// ----------------- CONFIG -----------------
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_local_secret_123!";
-const TOKEN_EXP = "2h";
+// JWT secret
+const JWT_SECRET = process.env.JWT_SECRET || "5ab4f9289e4ef9e9b3323114c0f7c5e2"; // replace in env
 
-// ----------------- Multer for profile photo -----------------
+// Multer for photo upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename: (req, file, cb) => {
-    // req.userId may not exist for unauth; we set temporary name if missing
-    const id = req.userId || "anon";
     const ext = path.extname(file.originalname || "");
-    cb(null, `user_${id}_${Date.now()}${ext}`);
-  },
+    cb(null, `user_${req.userId || "anon"}_${Date.now()}${ext}`);
+  }
 });
 const upload = multer({ storage });
 
-// ----------------- Nodemailer -----------------
+// Nodemailer transport (Brevo or Gmail)
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: +(process.env.SMTP_PORT || 587),
   secure: false,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
+    user: process.env.SMTP_USER || "",
+    pass: process.env.SMTP_PASS || ""
   }
 });
 
-
-// Send OTP Email
-async function sendOtpMail(to, otp) {
-  const from = process.env.FROM_EMAIL || process.env.SMTP_USER || "no-reply@ezeevote.app";
-  try {
-    await transporter.sendMail({
-      from,
-      to,
-      subject: "Your EzeeVote OTP Code",
-      text: `Your OTP is ${otp}. It expires in 10 minutes.`,
-      html: `<p>Your OTP for <strong>EzeeVote</strong> is <b>${otp}</b>. Expires in 10 minutes.</p>`
-    });
-    console.log("✅ OTP sent to", to);
-    return true;
-  } catch (err) {
-    console.error("❌ OTP Email Error:", err.message || err);
-    return false;
-  }
+// helper functions
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
-
-// Send Reset Password Email
-async function sendResetMail(to, token) {
-  const from = process.env.FROM_EMAIL || process.env.SMTP_USER || "no-reply@ezeevote.app";
-  const frontend = process.env.FRONTEND_ORIGIN || "https://online-voting-system-henna.vercel.app";
-  const resetUrl = `${frontend}/?reset_token=${token}`;
-  try {
-    await transporter.sendMail({
-      from,
-      to,
-      subject: "EzeeVote Password Reset",
-      text: `Reset link: ${resetUrl} (expires in 30 minutes)`,
-      html: `<p>Click to reset your password: <a href="${resetUrl}">${resetUrl}</a> (expires in 30 min)</p>`
-    });
-    console.log("✅ Reset email sent to", to);
-    return true;
-  } catch (err) {
-    console.error("❌ Reset Email Error:", err.message || err);
-    return false;
-  }
-}
-
-
-// ----------------- Helpers -----------------
-function createToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXP });
+function signToken(payload) {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
 }
 function auth(req, res, next) {
   const token = req.headers["authorization"];
@@ -115,199 +71,192 @@ function auth(req, res, next) {
     next();
   });
 }
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-function genRandomHex(len = 32) {
-  return crypto.randomBytes(len).toString("hex");
+
+async function sendOtpMail(to, otp) {
+  const from = process.env.FROM_EMAIL || process.env.SMTP_USER || "no-reply@ezeevote.app";
+  try {
+    await transporter.sendMail({
+      from,
+      to,
+      subject: "EzeeVote OTP Code",
+      text: `Your OTP is ${otp}. It expires in 10 minutes.`,
+      html: `<p>Your OTP for <strong>EzeeVote</strong>: <b>${otp}</b> (expires in 10 minutes)</p>`
+    });
+    console.log("✅ OTP email queued to:", to);
+    return true;
+  } catch (err) {
+    console.error("❌ OTP Email Error:", err.message || err);
+    return false;
+  }
 }
 
-// ----------------- Routes -----------------
+async function sendResetMail(to, token) {
+  const from = process.env.FROM_EMAIL || process.env.SMTP_USER || "no-reply@ezeevote.app";
+  const frontend = process.env.FRONTEND_ORIGIN || FRONTEND_ORIGIN;
+  const url = `${frontend}/?reset_token=${token}`;
+  try {
+    await transporter.sendMail({
+      from,
+      to,
+      subject: "EzeeVote Password Reset",
+      text: `Reset link: ${url} (30 minutes)`,
+      html: `<p>Reset your password: <a href="${url}">${url}</a> (valid 30 minutes)</p>`
+    });
+    console.log("✅ Reset mail queued to:", to);
+    return true;
+  } catch (err) {
+    console.error("❌ Reset Email Error:", err.message || err);
+    return false;
+  }
+}
+
+/* ROUTES */
+
+// health
 app.get("/", (req, res) => res.send("✅ EzeeVote Backend Running"));
 
-// ---------- REGISTER ----------
+// register -> save user + generate otp (send OTP async, respond fast)
 app.post("/api/register", async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) return res.json({ error: "All fields required" });
-
-  // check existing
-  db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
-    if (err) return res.json({ error: "DB error" });
-
-    const otp = generateOTP();
-    const otpExpires = Date.now() + 10 * 60 * 1000; // 10 min
+  try {
     const hashed = await bcrypt.hash(password, 10);
-
-    // If user exists
-    if (user) {
-      if (user.verified) {
-        return res.json({ error: "Email already registered and verified. Please login or use forgot password." });
-      } else {
-        // update OTP + password (allow re-register to set new password)
-        db.run("UPDATE users SET name=?, password=?, otp_code=?, otp_expires=? WHERE id=?", [name, hashed, otp, otpExpires, user.id], async function (uErr) {
-          if (uErr) {
-            return res.json({ error: "DB error" });
-          }
-          // send email in background; respond immediately
-          sendOtpMail(email, otp).catch(console.error);
-          return res.json({ message: "Existing unverified account updated. OTP re-sent.", userId: user.id });
-        });
-        return;
-      }
-    }
-
-    // New user
-    db.run("INSERT INTO users (name, email, password, verified, otp_code, otp_expires) VALUES (?,?,?,?,?,?)",
-      [name, email, hashed, 0, otp, otpExpires],
-      function (insertErr) {
-        if (insertErr) return res.json({ error: "DB error during insert" });
-        // send OTP email but do not block response
-        sendOtpMail(email, otp).catch(console.error);
-        res.json({ message: "Registered. OTP sent to email.", userId: this.lastID });
+    const otp = generateOTP();
+    const expires = Date.now() + 10*60*1000;
+    db.run("INSERT INTO users (name,email,password,verified,otp_code,otp_expires) VALUES (?,?,?,?,?,?)",
+      [name, email, hashed, 0, otp, expires],
+      function(err) {
+        if (err) {
+          console.error("Register error:", err.message);
+          return res.json({ error: "Email already exists" });
+        }
+        // send OTP in background (do not await)
+        sendOtpMail(email, otp).catch(e => console.error("OTP send error:", e));
+        res.json({ message: "Registered. OTP sent (may take a moment).", userId: this.lastID });
       });
-  });
+  } catch (err) {
+    console.error(err);
+    res.json({ error: "Server error" });
+  }
 });
 
-// ---------- RESEND OTP ----------
+// resend OTP
 app.post("/api/resend-otp", (req, res) => {
   const { email } = req.body;
   if (!email) return res.json({ error: "Email required" });
-
-  db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
+  const otp = generateOTP();
+  const expires = Date.now() + 10*60*1000;
+  db.run("UPDATE users SET otp_code = ?, otp_expires = ? WHERE email = ?", [otp, expires, email], async function(err) {
     if (err) return res.json({ error: "DB error" });
-    if (!user) return res.json({ error: "User not found" });
-    if (user.verified) return res.json({ message: "Already verified" });
-
-    const otp = generateOTP();
-    const otpExpires = Date.now() + 10 * 60 * 1000;
-    db.run("UPDATE users SET otp_code=?, otp_expires=? WHERE id=?", [otp, otpExpires, user.id], (uErr) => {
-      if (uErr) return res.json({ error: "DB error" });
-      // send in background
-      sendOtpMail(email, otp).then(ok => {
-        if (ok) res.json({ message: "OTP resent to email." });
-        else res.json({ message: "OTP generated but failed to send email (check SMTP settings)." });
-      }).catch(() => res.json({ message: "OTP generated but failed to send email." }));
-    });
+    // check if updated row exists
+    if (this.changes === 0) return res.json({ error: "User not found" });
+    // send async
+    sendOtpMail(email, otp).catch(err => console.error("OTP resend error:", err));
+    res.json({ message: "OTP resent (check your inbox)" });
   });
 });
 
-// ---------- VERIFY OTP ----------
+// verify OTP
 app.post("/api/verify-otp", (req, res) => {
   const { email, otp } = req.body;
-  if (!email || !otp) return res.json({ error: "Email and OTP required" });
-
+  if (!email || !otp) return res.json({ error: "Email+OTP required" });
   db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
     if (err) return res.json({ error: "DB error" });
     if (!user) return res.json({ error: "User not found" });
     if (user.verified) return res.json({ message: "Already verified" });
-    if (!user.otp_code || user.otp_code !== otp) return res.json({ error: "Invalid OTP" });
+    if (user.otp_code !== otp) return res.json({ error: "Invalid OTP" });
     if (Date.now() > (user.otp_expires || 0)) return res.json({ error: "OTP expired" });
-
-    db.run("UPDATE users SET verified=1, otp_code=NULL, otp_expires=NULL WHERE id=?", [user.id], (uErr) => {
-      if (uErr) return res.json({ error: "DB error" });
-      res.json({ message: "Email verified. You can login now." });
+    db.run("UPDATE users SET verified=1, otp_code=NULL, otp_expires=NULL WHERE id=?", [user.id], (e) => {
+      if (e) return res.json({ error: "DB error" });
+      res.json({ message: "Email verified" });
     });
   });
 });
 
-// ---------- LOGIN ----------
+// login
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.json({ error: "Email and password required" });
-
   db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
     if (err) return res.json({ error: "DB error" });
     if (!user) return res.json({ error: "User not found" });
     if (!user.verified) return res.json({ error: "Email not verified" });
-
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.json({ error: "Invalid credentials" });
-
-    const token = createToken({ id: user.id, email: user.email });
+    const token = signToken({ id: user.id, email: user.email });
     res.json({ message: "Login successful", token, userId: user.id, name: user.name, photo: user.profile_photo });
   });
 });
 
-// ---------- FORGOT PASSWORD ----------
+// forgot password -> create reset token, send link
 app.post("/api/forgot-password", (req, res) => {
   const { email } = req.body;
   if (!email) return res.json({ error: "Email required" });
-
-  db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
+  const token = crypto.randomBytes(20).toString("hex");
+  const expires = Date.now() + 30*60*1000; // 30m
+  db.run("UPDATE users SET reset_token = ?, reset_expires = ? WHERE email = ?", [token, expires, email], function(err) {
     if (err) return res.json({ error: "DB error" });
-    if (!user) return res.json({ error: "User not found" });
-
-    const token = genRandomHex(20);
-    const expires = Date.now() + 30 * 60 * 1000; // 30 minutes
-    db.run("UPDATE users SET reset_token=?, reset_expires=? WHERE id=?", [token, expires, user.id], (uErr) => {
-      if (uErr) return res.json({ error: "DB error" });
-      sendResetMail(email, token).then(ok => {
-        if (ok) res.json({ message: "Password reset link sent to email." });
-        else res.json({ message: "Reset token generated but failed to send email (check SMTP)." });
-      }).catch(() => res.json({ message: "Reset token generated but failed to send email." }));
-    });
+    if (this.changes === 0) return res.json({ error: "User not found" });
+    sendResetMail(email, token).catch(e => console.error("Reset mail error:", e));
+    res.json({ message: "Reset link sent to email (if account exists)" });
   });
 });
 
-// ---------- RESET PASSWORD ----------
+// reset password
 app.post("/api/reset-password", async (req, res) => {
-  const { token, newPassword } = req.body;
-  if (!token || !newPassword) return res.json({ error: "Token and new password required" });
-
+  const { token, password } = req.body;
+  if (!token || !password) return res.json({ error: "Token+password required" });
   db.get("SELECT * FROM users WHERE reset_token = ?", [token], async (err, user) => {
     if (err) return res.json({ error: "DB error" });
     if (!user) return res.json({ error: "Invalid token" });
-    if (Date.now() > (user.reset_expires || 0)) return res.json({ error: "Reset token expired" });
-
-    const hashed = await bcrypt.hash(newPassword, 10);
-    db.run("UPDATE users SET password=?, reset_token=NULL, reset_expires=NULL WHERE id=?", [hashed, user.id], (uErr) => {
-      if (uErr) return res.json({ error: "DB error" });
-      res.json({ message: "Password reset successful. You can login now." });
+    if (Date.now() > (user.reset_expires || 0)) return res.json({ error: "Token expired" });
+    const hashed = await bcrypt.hash(password, 10);
+    db.run("UPDATE users SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?", [hashed, user.id], (e) => {
+      if (e) return res.json({ error: "DB error" });
+      res.json({ message: "Password reset successful" });
     });
   });
 });
 
-// ---------- PROFILE (get currently logged user) ----------
+// get current user
 app.get("/api/me", auth, (req, res) => {
-  db.get("SELECT id, name, email, profile_photo FROM users WHERE id = ?", [req.userId], (err, row) => {
+  db.get("SELECT id,name,email,profile_photo FROM users WHERE id=?", [req.userId], (err, row) => {
     if (err) return res.json({ error: "DB error" });
     res.json({ user: row });
   });
 });
 
-// ---------- UPLOAD PROFILE PHOTO ----------
+// profile photo upload
 app.post("/api/profile/photo", auth, upload.single("photo"), (req, res) => {
-  if (!req.file) return res.json({ error: "No file uploaded" });
   const rel = `/uploads/${path.basename(req.file.path)}`;
-  db.run("UPDATE users SET profile_photo=? WHERE id=?", [rel, req.userId], (err) => {
+  db.run("UPDATE users SET profile_photo = ? WHERE id = ?", [rel, req.userId], (err) => {
     if (err) return res.json({ error: "DB error" });
     res.json({ message: "Photo uploaded", photo: rel });
   });
 });
 
-// ---------- CANDIDATES ----------
+// candidates
 app.get("/api/candidates", (req, res) => {
-  db.all("SELECT id, name, party, image FROM candidates", [], (err, rows) => {
+  db.all("SELECT id,name,party,image FROM candidates", [], (err, rows) => {
     if (err) return res.json({ error: "DB error" });
     res.json({ candidates: rows });
   });
 });
 
-// ---------- VOTE ----------
+// vote (authenticated)
 app.post("/api/vote", auth, (req, res) => {
   const { candidateId } = req.body;
   const userId = req.userId;
   db.get("SELECT 1 FROM votes WHERE user_id = ?", [userId], (err, row) => {
     if (err) return res.json({ error: "DB error" });
-    if (row) return res.json({ error: "You have already voted!" });
-    db.run("INSERT INTO votes (user_id, candidate_id) VALUES (?,?)", [userId, candidateId], (e2) => {
-      if (e2) return res.json({ error: "DB error" });
-      res.json({ message: "✅ Vote cast successfully!" });
+    if (row) return res.json({ error: "Already voted" });
+    db.run("INSERT INTO votes (user_id,candidate_id) VALUES (?,?)", [userId, candidateId], (e) => {
+      if (e) return res.json({ error: "DB error" });
+      res.json({ message: "Vote cast" });
     });
   });
 });
 
-// ---------- RESULTS ----------
+// results
 app.get("/api/results", (req, res) => {
   const q = `
     SELECT c.id, c.name, c.party, COUNT(v.id) AS vote_count
@@ -322,6 +271,5 @@ app.get("/api/results", (req, res) => {
   });
 });
 
-// START SERVER
-const PORT = +(process.env.PORT || 5000);
-app.listen(PORT, () => console.log(`✅ Server running on Render at port ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

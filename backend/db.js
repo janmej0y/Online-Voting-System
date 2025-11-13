@@ -2,14 +2,13 @@
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 
-const dbPath = path.resolve(__dirname, "voting.db"); // keep voting.db (or change as you want)
+const dbPath = path.resolve(__dirname, "voting.db");
 const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) console.error("❌ DB open error:", err.message);
-  else console.log("✅ Connected to SQLite database");
+  if (err) console.error("❌ Error opening DB:", err.message);
+  else console.log("✅ Connected to SQLite database:", dbPath);
 });
 
 db.serialize(() => {
-  // Users table (verification, OTP, reset tokens, profile)
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,7 +24,6 @@ db.serialize(() => {
     )
   `);
 
-  // Candidates table
   db.run(`
     CREATE TABLE IF NOT EXISTS candidates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +33,6 @@ db.serialize(() => {
     )
   `);
 
-  // Votes table
   db.run(`
     CREATE TABLE IF NOT EXISTS votes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,16 +43,14 @@ db.serialize(() => {
     )
   `);
 
-  // Insert default candidates if none exist
-  db.get("SELECT COUNT(*) as c FROM candidates", (e, r) => {
+  db.get("SELECT COUNT(*) AS c FROM candidates", (e, r) => {
     if (e) return console.error(e.message);
     if (r && r.c === 0) {
       const s = db.prepare("INSERT INTO candidates (name, party, image) VALUES (?,?,?)");
       s.run("Narendra Modi", "BJP", "bjp.jpg");
       s.run("Rahul Gandhi", "Congress", "cong.png");
       s.run("Mamata Banerjee", "TMC", "tmclogo.png");
-      s.finalize();
-      console.log("✅ Default candidates inserted");
+      s.finalize(() => console.log("✅ Default candidates inserted"));
     }
   });
 });
