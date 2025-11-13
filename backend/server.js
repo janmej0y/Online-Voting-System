@@ -48,14 +48,18 @@ const upload = multer({ storage });
 
 // ----------------- Nodemailer -----------------
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: +(process.env.SMTP_PORT || 587),
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
   secure: false,
   auth: {
-    user: process.env.SMTP_USER || "",
-    pass: process.env.SMTP_PASS || ""
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
+
 
 // Send OTP Email
 async function sendOtpMail(to, otp) {
