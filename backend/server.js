@@ -118,27 +118,34 @@ app.get("/", (req, res) => res.send("✅ EzeeVote Backend Running"));
 // register -> save user + generate otp (send OTP async, respond fast)
 app.post("/api/register", async (req, res) => {
   const { name, email, password } = req.body;
-  if (!name || !email || !password) return res.json({ error: "All fields required" });
-  try {
-    const hashed = await bcrypt.hash(password, 10);
-    const otp = generateOTP();
-    const expires = Date.now() + 10*60*1000;
-    db.run("INSERT INTO users (name,email,password,verified,otp_code,otp_expires) VALUES (?,?,?,?,?,?)",
-      [name, email, hashed, 0, otp, expires],
-      function(err) {
-        if (err) {
-          console.error("Register error:", err.message);
-          return res.json({ error: "Email already exists" });
-        }
-        // send OTP in background (do not await)
-        sendOtpMail(email, otp).catch(e => console.error("OTP send error:", e));
-        res.json({ message: "Registered. OTP sent (may take a moment).", userId: this.lastID });
+
+  if (!name || !email || !password)
+    return res.json({ error: "All fields required" });
+
+  const hashed = await bcrypt.hash(password, 10);
+  const otp = generateOTP();
+  const expires = Date.now() + 10 * 60 * 1000;
+
+  db.run(
+    "INSERT INTO users (name, email, password, verified, otp_code, otp_expires) VALUES (?,?,?,?,?,?)",
+    [name, email, hashed, 0, otp, expires],
+    function (err) {
+      if (err) return res.json({ error: "Email already exists" });
+
+      // ✅ SEND RESPONSE IMMEDIATELY (Fast UI)
+      res.json({
+        message: "Registered! OTP sent.",
+        userId: this.lastID,
       });
-  } catch (err) {
-    console.error(err);
-    res.json({ error: "Server error" });
-  }
+
+      // ⏳ Send OTP in BACKGROUND (FASTEST FIX)
+      sendOtpMail(email, otp)
+        .then(() => console.log("OTP sent to:", email))
+        .catch((err) => console.log("OTP Error:", err.message));
+    }
+  );
 });
+
 
 // resend OTP
 app.post("/api/resend-otp", (req, res) => {
