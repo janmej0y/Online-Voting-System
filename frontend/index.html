@@ -4,13 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>EzeeVote — Smart Online Voting</title>
-  <link rel="stylesheet" href="styles.css" />
 
-  <!-- GOOGLE LOGIN SDK -->
+  <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
+
   <!-- HEADER -->
   <header class="site-header">
     <div class="logo">
@@ -22,73 +25,61 @@
     </div>
   </header>
 
-  <!-- HERO SECTION -->
+  <!-- HERO -->
   <section class="hero">
     <div class="hero-inner">
       <h2 class="hero-title">Secure • Fast • Transparent</h2>
       <p class="hero-sub">
-        Cast your vote online with confidence. Real-time results, Google-authenticated login, and high-security protection.
+        A high-tech online voting system powered by secure Google Sign-In.
+        No passwords. No OTP. Instant login with your Google account.
       </p>
 
       <div class="hero-cta">
-        <button onclick="showLogin()" class="btn-primary">Login with Google</button>
+        <button class="btn-primary" onclick="scrollToLogin()">Get Started</button>
+        <button class="btn-ghost" onclick="scrollToLogin()">Login</button>
       </div>
     </div>
 
-    <!-- Floating glow + chips -->
-    <div class="hero-visual">
+    <div class="hero-visual" aria-hidden="true">
       <div class="card-glow"></div>
-
       <div class="chip-grid">
         <div class="chip">VOTE</div>
+        <div class="chip">REAL-TIME</div>
         <div class="chip">SECURE</div>
-        <div class="chip">RESULTS</div>
       </div>
     </div>
   </section>
 
-  <!-- MAIN CONTENT -->
   <main>
 
-    <!-- LOGIN SECTION -->
-    <section id="login-section" class="card auth-card" style="display:none;">
-      <h2>Login to EzeeVote</h2>
-      <p class="muted">Use secure Google authentication</p>
+    <!-- GOOGLE LOGIN CARD -->
+    <section id="login-section" class="card auth-card">
+      <h2 style="text-align:center; margin-bottom:20px;">Sign in to Continue</h2>
 
       <!-- GOOGLE LOGIN BUTTON -->
-      <div id="g_id_onload"
-        data-client_id="1013871678334-aiatsb0d3k5kqqsk0m7ub8d76040qmec.apps.googleusercontent.com"
-        data-context="signin"
-        data-ux_mode="popup"
-        data-callback="handleGoogleLogin"
-        data-auto_select="false">
-      </div>
+      <div id="google-btn" style="display:flex; justify-content:center; margin:20px 0;"></div>
 
-      <div class="g_id_signin"
-        data-type="standard"
-        data-size="large"
-        data-theme="outline"
-        data-text="signin_with"
-        data-shape="rectangular"
-        data-logo_alignment="left">
-      </div>
-
-      <button onclick="closeLogin()" class="btn-ghost" style="margin-top:15px;">Back</button>
+      <p class="muted" style="text-align:center;">
+        Your email is never shared. Secure authentication provided by Google.
+      </p>
     </section>
 
-
-    <!-- PROFILE SECTION -->
+    <!-- PROFILE -->
     <section id="profile-section" class="card auth-card" style="display:none;">
       <h2>My Profile</h2>
       <img id="profile-photo" src="" alt="Profile" style="display:none" />
-      <h3 id="user-name"></h3>
 
-      <button onclick="logout()" class="btn-ghost">Logout</button>
+      <h3 id="user-name" style="text-align:center;"></h3>
+
+      <div class="controls">
+        <button onclick="showVoting()" class="btn-primary">Proceed to Vote</button>
+        <button onclick="logout()" class="btn-ghost">Logout</button>
+      </div>
     </section>
 
-    <!-- VOTING SECTION -->
+    <!-- VOTING -->
     <section id="voting-section" class="card" style="display:none;">
-      <h2>Cast Vote</h2>
+      <h2>Cast Your Vote</h2>
       <div id="candidates-list" class="candidates"></div>
 
       <div class="controls">
@@ -97,23 +88,38 @@
       </div>
     </section>
 
-    <!-- RESULTS SECTION -->
+    <!-- RESULTS -->
     <section id="results-section" class="card" style="display:none;">
-      <h2>Results</h2>
-      <canvas id="resultsChart" style="width:100%;max-width:650px;height:300px;"></canvas>
+      <h2>Election Results</h2>
+
+      <canvas id="resultsChart" style="width:100%; max-width:650px; height:300px;"></canvas>
+
       <table id="results-table"></table>
-      <button onclick="backToVote()" class="btn-primary">Back</button>
+
+      <button onclick="showVoting()" class="btn-primary" style="margin-top:15px;">
+        Back to Voting
+      </button>
     </section>
 
   </main>
 
-  <!-- POPUP MESSAGE -->
+  <!-- POPUP -->
   <div id="popup" class="popup" style="display:none;">
-    <div id="popup-message"></div>
-    <button onclick="closePopup()">OK</button>
+    <div>
+      <div id="popup-message"></div>
+      <button onclick="closePopup()" class="btn-primary" style="margin-top:10px;">OK</button>
+    </div>
   </div>
 
+  <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
+
+  <script>
+    function scrollToLogin() {
+      document.getElementById("login-section").scrollIntoView({ behavior: "smooth" });
+    }
+  </script>
+
 </body>
 </html>
