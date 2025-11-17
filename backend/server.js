@@ -15,15 +15,31 @@ const db = require("./db");
 const app = express();
 app.use(bodyParser.json());
 
-// Origins
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5500";
-const SERVER_ORIGIN = process.env.SERVER_ORIGIN || `http://localhost:${process.env.PORT || 5000}`;
+const allowedOrigins = [
+  "https://online-voting-system-henna.vercel.app",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500"
+];
 
-app.use(cors({
-  origin: FRONTEND_ORIGIN,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
-}));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+
 
 // static images (candidate images inside frontend/images)
 app.use('/images', express.static(path.join(__dirname, "../frontend/images")));
