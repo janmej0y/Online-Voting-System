@@ -1,5 +1,5 @@
 // frontend/app.js
-const API_BASE = "https://ezeevote-backend.onrender.com/api";
+const API_BASE = "https://ezeevote.onrender.com/api"; 
 let currentUserId = null;
 
 function getToken(){ return localStorage.getItem("token"); }
