@@ -1,5 +1,5 @@
 // frontend/app.js
-const API_BASE = (window.location.hostname.includes("localhost") ? "http://localhost:5000/api" : `${window.location.protocol}//${window.location.host}/api`);
+const API_BASE = "https://ezeevote-backend.onrender.com/api";
 let currentUserId = null;
 
 function getToken(){ return localStorage.getItem("token"); }
