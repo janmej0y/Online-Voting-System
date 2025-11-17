@@ -2,37 +2,38 @@
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 
+// Create DB file
 const dbPath = path.resolve(__dirname, "voting.db");
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) console.error("❌ Error opening DB:", err.message);
   else console.log("✅ Connected to SQLite database:", dbPath);
 });
 
+// Create tables
 db.serialize(() => {
+
+  // USERS TABLE (Google Login Only)
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      verified INTEGER DEFAULT 0,
-      otp_code TEXT,
-      otp_expires INTEGER,
-      reset_token TEXT,
-      reset_expires INTEGER,
+      name TEXT,
+      email TEXT UNIQUE,
+      google_id TEXT UNIQUE,
       profile_photo TEXT
-    )
+    );
   `);
 
+  // CANDIDATES TABLE
   db.run(`
     CREATE TABLE IF NOT EXISTS candidates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       party TEXT NOT NULL,
       image TEXT
-    )
+    );
   `);
 
+  // VOTES TABLE
   db.run(`
     CREATE TABLE IF NOT EXISTS votes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,17 +41,25 @@ db.serialize(() => {
       candidate_id INTEGER NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (candidate_id) REFERENCES candidates(id)
-    )
+    );
   `);
 
-  db.get("SELECT COUNT(*) AS c FROM candidates", (e, r) => {
-    if (e) return console.error(e.message);
-    if (r && r.c === 0) {
-      const s = db.prepare("INSERT INTO candidates (name, party, image) VALUES (?,?,?)");
-      s.run("Narendra Modi", "BJP", "bjp.jpg");
-      s.run("Rahul Gandhi", "Congress", "cong.png");
-      s.run("Mamata Banerjee", "TMC", "tmclogo.png");
-      s.finalize(() => console.log("✅ Default candidates inserted"));
+  // Insert default candidates ONCE
+  db.get("SELECT COUNT(*) AS c FROM candidates", (err, row) => {
+    if (err) return console.error("DB error:", err.message);
+
+    if (row.c === 0) {
+      const stmt = db.prepare(
+        "INSERT INTO candidates (name, party, image) VALUES (?,?,?)"
+      );
+
+      stmt.run("Narendra Modi", "BJP", "bjp.jpg");
+      stmt.run("Rahul Gandhi", "Congress", "cong.png");
+      stmt.run("Mamata Banerjee", "TMC", "tmclogo.png");
+
+      stmt.finalize(() =>
+        console.log("⚡ Default candidates successfully inserted")
+      );
     }
   });
 });
