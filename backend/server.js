@@ -93,55 +93,54 @@ app.get("/", (_, res) => res.send("✅ EzeeVote Backend Running (Google Login En
 // ================================
 // 🔑 GOOGLE LOGIN API
 // ================================
-app.post("/api/google-login", async (req, res) => {
-  const { idToken } = req.body;
+// login
+app.post("/api/google-login", (req, res) => {
 
+});
+
+// ⭐ GOOGLE LOGIN ROUTE (paste here)
+app.post("/api/google-login", async (req, res) => {
   try {
-    const ticket = await googleClient.verifyIdToken({
-      idToken,
+    const { credential } = req.body;
+    if (!credential) {
+      console.log("❌ No credential received!");
+      return res.json({ error: "No Google token provided" });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID
     });
 
     const payload = ticket.getPayload();
-    const email = payload.email;
+    const googleId = payload.sub;
     const name = payload.name;
-    const picture = payload.picture;
+    const email = payload.email;
+    const photo = payload.picture;
 
-    // Check if user exists
-    db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
+    db.get("SELECT * FROM users WHERE google_id = ?", [googleId], (err, user) => {
       if (err) return res.json({ error: "DB error" });
 
-      // If new user → create account automatically
       if (!user) {
         db.run(
-          "INSERT INTO users (name, email, verified, profile_photo) VALUES (?,?,1,?)",
-          [name, email, picture],
-          function (err2) {
-            if (err2) return res.json({ error: "DB error" });
+          "INSERT INTO users (name, email, google_id, profile_photo) VALUES (?,?,?,?)",
+          [name, email, googleId, photo],
+          function (err) {
+            if (err) return res.json({ error: "DB error" });
 
-            const token = signToken({ id: this.lastID });
-            return res.json({
-              token,
-              userId: this.lastID,
-              name,
-              photo: picture
-            });
+            const token = jwt.sign({ id: this.lastID }, JWT_SECRET);
+            res.json({ token, userId: this.lastID });
           }
         );
       } else {
-        const token = signToken({ id: user.id });
-
-        return res.json({
-          token,
-          userId: user.id,
-          name: user.name,
-          photo: user.profile_photo
-        });
+        const token = jwt.sign({ id: user.id }, JWT_SECRET);
+        res.json({ token, userId: user.id });
       }
     });
-  } catch (err) {
-    console.error("Google Login Error:", err);
-    res.json({ error: "Google authentication failed" });
+
+  } catch (error) {
+    console.log("Google Login Error:", error);
+    res.json({ error: "Invalid Google token" });
   }
 });
 
