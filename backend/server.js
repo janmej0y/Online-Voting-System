@@ -90,24 +90,17 @@ const upload = multer({ storage });
 // ================================
 app.get("/", (_, res) => res.send("✅ EzeeVote Backend Running (Google Login Enabled)"));
 
-// ================================
-// 🔑 GOOGLE LOGIN API
-// ================================
-// login
-app.post("/api/google-login", (req, res) => {
-
-});
-
-// ⭐ GOOGLE LOGIN ROUTE (paste here)
+// ⭐ GOOGLE LOGIN 
 app.post("/api/google-login", async (req, res) => {
   try {
     const { credential } = req.body;
+
     if (!credential) {
-      console.log("❌ No credential received!");
-      return res.json({ error: "No Google token provided" });
+      console.log("❌ No Google token received");
+      return res.json({ error: "No Google token" });
     }
 
-    const ticket = await client.verifyIdToken({
+    const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID
     });
@@ -121,6 +114,7 @@ app.post("/api/google-login", async (req, res) => {
     db.get("SELECT * FROM users WHERE google_id = ?", [googleId], (err, user) => {
       if (err) return res.json({ error: "DB error" });
 
+      // NEW USER → Insert
       if (!user) {
         db.run(
           "INSERT INTO users (name, email, google_id, profile_photo) VALUES (?,?,?,?)",
@@ -128,21 +122,24 @@ app.post("/api/google-login", async (req, res) => {
           function (err) {
             if (err) return res.json({ error: "DB error" });
 
-            const token = jwt.sign({ id: this.lastID }, JWT_SECRET);
-            res.json({ token, userId: this.lastID });
+            const token = signToken({ id: this.lastID });
+            return res.json({ token, userId: this.lastID });
           }
         );
-      } else {
-        const token = jwt.sign({ id: user.id }, JWT_SECRET);
-        res.json({ token, userId: user.id });
+        return;
       }
+
+      // EXISTING USER
+      const token = signToken({ id: user.id });
+      return res.json({ token, userId: user.id });
     });
 
   } catch (error) {
-    console.log("Google Login Error:", error);
-    res.json({ error: "Invalid Google token" });
+    console.log("❌ Google Login Error:", error);
+    return res.json({ error: "Invalid Google login token" });
   }
 });
+
 
 // ================================
 // 👤 GET LOGGED-IN USER PROFILE

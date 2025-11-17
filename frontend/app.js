@@ -1,5 +1,5 @@
 /* frontend/app.js */
-const API_BASE = "https://ezeevote.onrender.com";
+const API_BASE = "https://ezeevote.onrender.com/api"; 
 let currentUserId = null;
 
 function getToken() {
@@ -31,11 +31,13 @@ function showVoting() {
   document.getElementById("voting-section").style.display = "block";
 }
 
-/* ------------------------------
+/* ======================================================
    GOOGLE LOGIN HANDLER
---------------------------------*/
+===================================================== */
 async function handleGoogleLogin(response) {
   try {
+    console.log("Google ID Token:", response.credential);
+
     const res = await fetch(`${API_BASE}/google-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -51,37 +53,40 @@ async function handleGoogleLogin(response) {
       await loadProfile();
       await loadCandidates();
     } else {
-      alert(data.error || "Login failed");
+      alert(data.error || "Google login failed");
     }
   } catch (err) {
-    console.error(err);
-    alert("Login error");
+    console.error("Google login error:", err);
+    alert("Google login crashed");
   }
 }
 
-/* ------------------------------
+/* ======================================================
    LOAD PROFILE
---------------------------------*/
+===================================================== */
 async function loadProfile() {
   const res = await fetch(`${API_BASE}/me`, {
     headers: { Authorization: getToken() }
   });
-  const data = await res.json();
 
+  const data = await res.json();
   if (!data.user) return;
 
   hideAll();
   document.getElementById("profile-section").style.display = "block";
+
   document.getElementById("user-name").textContent = data.user.name;
+
   if (data.user.profile_photo) {
-    document.getElementById("profile-photo").src = data.user.profile_photo;
-    document.getElementById("profile-photo").style.display = "block";
+    const img = document.getElementById("profile-photo");
+    img.src = data.user.profile_photo;
+    img.style.display = "block";
   }
 }
 
-/* ------------------------------
-   CANDIDATES
---------------------------------*/
+/* ======================================================
+   LOAD CANDIDATES
+===================================================== */
 async function loadCandidates() {
   hideAll();
   document.getElementById("voting-section").style.display = "block";
@@ -125,9 +130,9 @@ async function castVote(candidateId) {
   alert(data.message || data.error);
 }
 
-/* ------------------------------
+/* ======================================================
    RESULTS
---------------------------------*/
+===================================================== */
 async function viewResults() {
   hideAll();
   document.getElementById("results-section").style.display = "block";
@@ -162,11 +167,13 @@ async function viewResults() {
         <td>${r.name}</td>
         <td>${r.party}</td>
         <td>${r.vote_count}</td>
-      </tr>
-    `;
+      </tr>`;
   });
 }
 
+/* ======================================================
+   LOGOUT
+===================================================== */
 function logout() {
   setToken(null);
   currentUserId = null;
@@ -174,13 +181,24 @@ function logout() {
   location.reload();
 }
 
-/* THEME TOGGLE */
-document.getElementById("theme-toggle").addEventListener("click", () => {
-  document.body.classList.toggle("dark");
-});
+/* ======================================================
+   THEME TOGGLE
+===================================================== */
+const themeBtn = document.getElementById("theme-toggle");
+if (themeBtn)
+  themeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+  });
 
-/* GOOGLE BUTTON INIT */
-window.onload = function () {
+/* ======================================================
+   GOOGLE LOGIN BUTTON INIT
+===================================================== */
+window.addEventListener("load", () => {
+  if (!document.getElementById("google-btn")) {
+    console.error("Google button element not found!");
+    return;
+  }
+
   google.accounts.id.initialize({
     client_id:
       "1013871678334-aiatsb0d3k5kqqsk0m7ub8d76040qmec.apps.googleusercontent.com",
@@ -191,4 +209,4 @@ window.onload = function () {
     document.getElementById("google-btn"),
     { theme: "outline", size: "large", width: "280" }
   );
-};
+});
