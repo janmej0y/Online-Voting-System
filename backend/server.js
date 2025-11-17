@@ -15,8 +15,10 @@ const db = require("./db");
 const app = express();
 app.use(bodyParser.json());
 
-// CORS: set your frontend origin(s) here (Vercel URL or local)
+// Origins
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5500";
+const SERVER_ORIGIN = process.env.SERVER_ORIGIN || `http://localhost:${process.env.PORT || 5000}`;
+
 app.use(cors({
   origin: FRONTEND_ORIGIN,
   methods: ["GET","POST","PUT","DELETE","OPTIONS"],
@@ -32,38 +34,45 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR);
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 // JWT secret
-const JWT_SECRET = process.env.JWT_SECRET || "5ab4f9289e4ef9e9b3323114c0f7c5e2"; // replace in env
+const JWT_SECRET = process.env.JWT_SECRET || "replace_this_secret_in_env";
 
 // Multer for photo upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname || "");
-    cb(null, `user_${req.userId || "anon"}_${Date.now()}${ext}`);
+    const safe = `user_${Date.now()}${Math.random().toString(36).slice(2,8)}${ext}`;
+    cb(null, safe);
   }
 });
 const upload = multer({ storage });
 
-// Nodemailer transport (Brevo or Gmail)
+// Nodemailer transport (Gmail app password or any SMTP)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: +(process.env.SMTP_PORT || 587),
-  secure: false,
+  secure: (process.env.SMTP_SECURE === "true") || false,
   auth: {
     user: process.env.SMTP_USER || "",
     pass: process.env.SMTP_PASS || ""
   }
 });
 
-// helper functions
+// helpers
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 function signToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
 }
+function parseAuthToken(req) {
+  const header = req.headers["authorization"] || "";
+  if (!header) return null;
+  if (header.startsWith("Bearer ")) return header.slice(7);
+  return header;
+}
 function auth(req, res, next) {
-  const token = req.headers["authorization"];
+  const token = parseAuthToken(req);
   if (!token) return res.status(401).json({ error: "No token" });
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ error: "Invalid token" });
@@ -78,14 +87,14 @@ async function sendOtpMail(to, otp) {
     await transporter.sendMail({
       from,
       to,
-      subject: "EzeeVote OTP Code",
+      subject: "EzeeVote — Your OTP code",
       text: `Your OTP is ${otp}. It expires in 10 minutes.`,
-      html: `<p>Your OTP for <strong>EzeeVote</strong>: <b>${otp}</b> (expires in 10 minutes)</p>`
+      html: `<p>Your OTP for <strong>EzeeVote</strong> is <b>${otp}</b>. Expires in 10 minutes.</p>`
     });
     console.log("✅ OTP email queued to:", to);
     return true;
   } catch (err) {
-    console.error("❌ OTP Email Error:", err.message || err);
+    console.error("❌ OTP Email Error:", err && (err.message || err));
     return false;
   }
 }
@@ -98,14 +107,14 @@ async function sendResetMail(to, token) {
     await transporter.sendMail({
       from,
       to,
-      subject: "EzeeVote Password Reset",
+      subject: "EzeeVote — Password reset",
       text: `Reset link: ${url} (30 minutes)`,
-      html: `<p>Reset your password: <a href="${url}">${url}</a> (valid 30 minutes)</p>`
+      html: `<p>Reset your password using this link (valid 30 minutes): <a href="${url}">${url}</a></p>`
     });
     console.log("✅ Reset mail queued to:", to);
     return true;
   } catch (err) {
-    console.error("❌ Reset Email Error:", err.message || err);
+    console.error("❌ Reset Email Error:", err && (err.message || err));
     return false;
   }
 }
@@ -115,37 +124,39 @@ async function sendResetMail(to, token) {
 // health
 app.get("/", (req, res) => res.send("✅ EzeeVote Backend Running"));
 
-// register -> save user + generate otp (send OTP async, respond fast)
-app.post("/api/register", async (req, res) => {
+// register -> insert user, respond quickly, send OTP async
+app.post("/api/register", (req, res) => {
   const { name, email, password } = req.body;
+  if (!name || !email || !password) return res.json({ error: "All fields required" });
 
-  if (!name || !email || !password)
-    return res.json({ error: "All fields required" });
+  bcrypt.hash(password, 10).then((hashed) => {
+    const otp = generateOTP();
+    const expires = Date.now() + 10 * 60 * 1000;
 
-  const hashed = await bcrypt.hash(password, 10);
-  const otp = generateOTP();
-  const expires = Date.now() + 10 * 60 * 1000;
+    const sql = `INSERT INTO users (name, email, password, verified, otp_code, otp_expires)
+                 VALUES (?,?,?,?,?,?)`;
+    db.run(sql, [name, email, hashed, 0, otp, expires], function(err) {
+      if (err) {
+        console.error("DB insert error:", err.message);
+        return res.json({ error: err.message.includes("UNIQUE") ? "Email already exists" : "DB error" });
+      }
 
-  db.run(
-    "INSERT INTO users (name, email, password, verified, otp_code, otp_expires) VALUES (?,?,?,?,?,?)",
-    [name, email, hashed, 0, otp, expires],
-    function (err) {
-      if (err) return res.json({ error: "Email already exists" });
-
-      // ✅ SEND RESPONSE IMMEDIATELY (Fast UI)
+      // quick response to client
       res.json({
-        message: "Registered! OTP sent.",
-        userId: this.lastID,
+        message: "✅ Registered! An OTP was sent to your email (check spam).",
+        userId: this.lastID
       });
 
-      // ⏳ Send OTP in BACKGROUND (FASTEST FIX)
-      sendOtpMail(email, otp)
-        .then(() => console.log("OTP sent to:", email))
-        .catch((err) => console.log("OTP Error:", err.message));
-    }
-  );
+      // send email async — fire-and-forget
+      sendOtpMail(email, otp).then(ok => {
+        if (!ok) console.error("Failed to send OTP to", email);
+      }).catch(e => console.error("OTP send error:", e));
+    });
+  }).catch(e => {
+    console.error("Hash error:", e);
+    res.json({ error: "Server error" });
+  });
 });
-
 
 // resend OTP
 app.post("/api/resend-otp", (req, res) => {
@@ -153,11 +164,9 @@ app.post("/api/resend-otp", (req, res) => {
   if (!email) return res.json({ error: "Email required" });
   const otp = generateOTP();
   const expires = Date.now() + 10*60*1000;
-  db.run("UPDATE users SET otp_code = ?, otp_expires = ? WHERE email = ?", [otp, expires, email], async function(err) {
+  db.run("UPDATE users SET otp_code = ?, otp_expires = ? WHERE email = ?", [otp, expires, email], function(err) {
     if (err) return res.json({ error: "DB error" });
-    // check if updated row exists
     if (this.changes === 0) return res.json({ error: "User not found" });
-    // send async
     sendOtpMail(email, otp).catch(err => console.error("OTP resend error:", err));
     res.json({ message: "OTP resent (check your inbox)" });
   });
@@ -183,6 +192,7 @@ app.post("/api/verify-otp", (req, res) => {
 // login
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) return res.json({ error: "Email+password required" });
   db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
     if (err) return res.json({ error: "DB error" });
     if (!user) return res.json({ error: "User not found" });
@@ -190,7 +200,12 @@ app.post("/api/login", (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.json({ error: "Invalid credentials" });
     const token = signToken({ id: user.id, email: user.email });
-    res.json({ message: "Login successful", token, userId: user.id, name: user.name, photo: user.profile_photo });
+    // return profile_photo as full URL if stored as relative
+    let profile_photo = user.profile_photo || null;
+    if (profile_photo && profile_photo.startsWith("/uploads")) {
+      profile_photo = `${SERVER_ORIGIN}${profile_photo}`;
+    }
+    res.json({ message: "Login successful", token, userId: user.id, name: user.name, photo: profile_photo });
   });
 });
 
@@ -228,16 +243,21 @@ app.post("/api/reset-password", async (req, res) => {
 app.get("/api/me", auth, (req, res) => {
   db.get("SELECT id,name,email,profile_photo FROM users WHERE id=?", [req.userId], (err, row) => {
     if (err) return res.json({ error: "DB error" });
+    if (!row) return res.json({ error: "User not found" });
+    if (row.profile_photo && row.profile_photo.startsWith("/uploads")) {
+      row.profile_photo = `${SERVER_ORIGIN}${row.profile_photo}`;
+    }
     res.json({ user: row });
   });
 });
 
 // profile photo upload
 app.post("/api/profile/photo", auth, upload.single("photo"), (req, res) => {
+  if (!req.file) return res.json({ error: "No file uploaded" });
   const rel = `/uploads/${path.basename(req.file.path)}`;
   db.run("UPDATE users SET profile_photo = ? WHERE id = ?", [rel, req.userId], (err) => {
     if (err) return res.json({ error: "DB error" });
-    res.json({ message: "Photo uploaded", photo: rel });
+    res.json({ message: "Photo uploaded", photo: `${SERVER_ORIGIN}${rel}` });
   });
 });
 
@@ -253,6 +273,7 @@ app.get("/api/candidates", (req, res) => {
 app.post("/api/vote", auth, (req, res) => {
   const { candidateId } = req.body;
   const userId = req.userId;
+  if (!candidateId) return res.json({ error: "candidateId required" });
   db.get("SELECT 1 FROM votes WHERE user_id = ?", [userId], (err, row) => {
     if (err) return res.json({ error: "DB error" });
     if (row) return res.json({ error: "Already voted" });

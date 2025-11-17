@@ -7,87 +7,120 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>🗳️ EzeeVote</h1>
-    <button id="theme-toggle" class="theme-btn">🌙</button>
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-blob"></div>
+      <h1>EzeeVote</h1>
+    </div>
+    <div class="header-actions">
+      <button id="theme-toggle" class="theme-btn">🌙</button>
+    </div>
   </header>
 
+  <section class="hero">
+    <div class="hero-inner">
+      <h2 class="hero-title">Secure • Fast • Transparent</h2>
+      <p class="hero-sub">Cast your vote online with confidence. Real-time results, profile support, and secure email verification.</p>
+      <div class="hero-cta">
+        <button onclick="showRegister()" class="btn-primary">Create account</button>
+        <button onclick="showLogin()" class="btn-ghost">Already have account</button>
+      </div>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="card-glow"></div>
+      <div class="chip-grid">
+        <div class="chip">VOTE</div>
+        <div class="chip">OTP</div>
+        <div class="chip">RESULTS</div>
+      </div>
+    </div>
+  </section>
+
   <main>
-    <section id="register-section" class="card">
+    <!-- Register, OTP, Login, Forgot, Reset, Profile, Voting, Results -->
+    <!-- register -->
+    <section id="register-section" class="card auth-card">
       <h2>Create Account</h2>
       <form id="register-form">
         <input id="reg-name" type="text" placeholder="Full name" required />
         <input id="reg-email" type="email" placeholder="Email" required />
         <input id="reg-password" type="password" placeholder="Password" required />
-        <button type="submit">Register</button>
+        <button type="submit" class="btn-primary">Register</button>
       </form>
-      <p>Already have account? <a href="#" onclick="showLogin()">Login</a></p>
+      <p class="muted">Already have account? <a href="#" onclick="showLogin()">Login</a></p>
     </section>
 
-    <section id="otp-section" class="card" style="display:none;">
+    <!-- OTP -->
+    <section id="otp-section" class="card auth-card" style="display:none;">
       <h2>Verify Email (OTP)</h2>
       <p>We sent a 6-digit code to your email</p>
       <form id="otp-form">
         <input id="otp-email" type="email" placeholder="Registered email" required />
-        <div style="display:flex;gap:10px">
+        <div class="row">
           <input id="otp-code" type="text" placeholder="Enter OTP" required />
-          <button id="resend-otp" type="button">Resend</button>
+          <button id="resend-otp" type="button" class="btn-ghost">Resend</button>
         </div>
-        <button type="submit">Verify</button>
+        <button type="submit" class="btn-primary">Verify</button>
       </form>
     </section>
 
-    <section id="login-section" class="card" style="display:none;">
+    <!-- login -->
+    <section id="login-section" class="card auth-card" style="display:none;">
       <h2>Login</h2>
       <form id="login-form">
         <input id="login-email" type="email" placeholder="Email" required />
         <input id="login-password" type="password" placeholder="Password" required />
-        <button type="submit">Login</button>
+        <button type="submit" class="btn-primary">Login</button>
       </form>
-      <p><a href="#" id="forgot-link">Forgot password?</a></p>
+      <p class="muted"><a href="#" id="forgot-link">Forgot password?</a></p>
     </section>
 
-    <section id="forgot-section" class="card" style="display:none;">
+    <!-- forgot -->
+    <section id="forgot-section" class="card auth-card" style="display:none;">
       <h2>Forgot Password</h2>
       <form id="forgot-form">
         <input id="forgot-email" type="email" placeholder="Your email" required />
-        <button type="submit">Send reset link</button>
+        <button type="submit" class="btn-primary">Send reset link</button>
       </form>
     </section>
 
-    <section id="reset-section" class="card" style="display:none;">
+    <!-- reset -->
+    <section id="reset-section" class="card auth-card" style="display:none;">
       <h2>Reset Password</h2>
       <form id="reset-form">
         <input id="reset-token" type="text" placeholder="Reset token (from link)" required />
         <input id="reset-password" type="password" placeholder="New password" required />
-        <button type="submit">Reset</button>
+        <button type="submit" class="btn-primary">Reset</button>
       </form>
     </section>
 
-    <section id="profile-section" class="card" style="display:none;">
+    <!-- profile -->
+    <section id="profile-section" class="card auth-card" style="display:none;">
       <h2>My Profile</h2>
       <img id="profile-photo" src="" alt="Profile" style="display:none" />
       <form id="photo-form">
         <input id="photo-file" type="file" accept="image/*" />
-        <button type="submit">Upload</button>
+        <button type="submit" class="btn-primary">Upload</button>
       </form>
       <h3 id="user-name"></h3>
     </section>
 
+    <!-- voting -->
     <section id="voting-section" class="card" style="display:none;">
       <h2>Cast Vote</h2>
       <div id="candidates-list" class="candidates"></div>
-      <div style="display:flex;gap:10px;justify-content:center;">
-        <button onclick="viewResults()">View Results</button>
-        <button onclick="logout()">Logout</button>
+      <div class="controls">
+        <button onclick="viewResults()" class="btn-ghost">View Results</button>
+        <button onclick="logout()" class="btn-ghost">Logout</button>
       </div>
     </section>
 
+    <!-- results -->
     <section id="results-section" class="card" style="display:none;">
       <h2>Results</h2>
       <canvas id="resultsChart" style="width:100%;max-width:650px;height:300px;"></canvas>
       <table id="results-table"></table>
-      <button onclick="backToVote()">Back</button>
+      <button onclick="backToVote()" class="btn-primary">Back</button>
     </section>
   </main>
 

@@ -1,22 +1,65 @@
-/* frontend/styles.css - simple modern responsive + animations */
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial, sans-serif;background:linear-gradient(135deg,#f6d365,#fda085);color:#222}
-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:rgba(255,255,255,0.15);backdrop-filter:blur(6px)}
-h1{margin:0;font-size:1.4rem}
-.theme-btn{background:#00000066;color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
-main{max-width:980px;margin:28px auto;padding:0 16px;display:grid;gap:20px}
-.card{background:rgba(255,255,255,0.95);padding:18px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.12);animation:fadeIn .4s}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-form{display:flex;flex-direction:column;gap:10px}
-input[type="text"],input[type="password"],input[type="email"],input[type="file"]{padding:10px;border-radius:8px;border:1px solid #ddd}
-button{padding:10px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,#36d1dc,#5b86e5);color:#fff;font-weight:600;cursor:pointer}
-button:hover{transform:translateY(-2px)}
-.candidates{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.candidate-card{background:linear-gradient(135deg,#667eea,#764ba2);padding:14px;border-radius:12px;color:#fff;text-align:center;transition:transform .2s}
-.candidate-card img{width:90px;height:90px;object-fit:contain;background:#fff;padding:8px;border-radius:8px;margin:0 auto 10px}
-.candidate-card h3{margin:6px 0}
-.vote-btn{background:#fff;color:#2b6cb0;padding:8px;border-radius:8px;width:100%}
-.popup{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center}
-.popup>div{background:#fff;padding:20px;border-radius:12px}
-#profile-photo{width:90px;height:90px;border-radius:50%;object-fit:cover;display:block;margin:10px auto}
-@media(max-width:600px){main{margin:12px}h1{font-size:1.1rem}.candidate-card img{width:70px;height:70px}}
+/* frontend/styles.css - modern high-tech look with hover hero and micro animations */
+:root{
+    --bg-1:#0f1724;
+    --glass: rgba(255,255,255,0.04);
+    --accent1:#6EE7B7;
+    --accent2:#60A5FA;
+    --card: rgba(255,255,255,0.03);
+    --muted: #9aa4b2;
+  }
+  
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial, sans-serif;background:linear-gradient(120deg,#021627 0%, #06121b 60%);color:#e6eef6;-webkit-font-smoothing:antialiased}
+  .site-header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(6px);position:sticky;top:0;z-index:10}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo-blob{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 6px 20px rgba(96,165,250,0.12);transform:rotate(-10deg)}
+  .logo h1{margin:0;font-size:1.2rem;letter-spacing:0.6px}
+  .header-actions{display:flex;align-items:center;gap:8px}
+  .theme-btn{background:transparent;color:inherit;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;cursor:pointer}
+  
+  .hero{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:36px 28px;margin:18px auto;max-width:1100px}
+  .hero-inner{flex:1;min-width:320px}
+  .hero-title{font-size:2.2rem;margin:0 0 8px;color:var(--accent1);text-shadow:0 6px 30px rgba(96,165,250,0.06)}
+  .hero-sub{color:var(--muted);margin:0 0 18px}
+  .hero-cta{display:flex;gap:12px}
+  .btn-primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));border:none;padding:10px 16px;border-radius:12px;color:#04202a;font-weight:700;cursor:pointer;box-shadow:0 10px 30px rgba(59,130,246,0.08);transition:transform .18s}
+  .btn-primary:hover{transform:translateY(-4px)}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 14px;border-radius:12px;color:var(--muted);cursor:pointer}
+  
+  .hero-visual{width:360px;height:180px;position:relative;display:flex;align-items:center;justify-content:center}
+  .card-glow{position:absolute;inset:0;border-radius:16px;background:linear-gradient(135deg,rgba(96,165,250,0.08), rgba(110,231,183,0.06));filter:blur(22px);transform:translateY(6px)}
+  .chip-grid{display:flex;gap:10px;z-index:2}
+  .chip{padding:10px 12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.03);box-shadow:0 8px 18px rgba(2,6,23,0.6);color:var(--accent1);font-weight:700;transition:transform .15s}
+  .chip:hover{transform:translateY(-6px) rotate(-4deg)}
+  
+  /* main area */
+  main{max-width:980px;margin:18px auto;padding:0 16px;display:grid;gap:20px}
+  .card{background:var(--card);padding:18px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02);animation:fadeIn .4s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .auth-card{max-width:520px;margin:0 auto}
+  form{display:flex;flex-direction:column;gap:12px}
+  input[type="text"],input[type="password"],input[type="email"],input[type="file"]{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+  button{cursor:pointer}
+  
+  /* candidates grid */
+  .candidates{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .candidate-card{background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;color:#dfeffb;text-align:center;transition:transform .25s, box-shadow .25s; border:1px solid rgba(255,255,255,0.03)}
+  .candidate-card:hover{transform:translateY(-8px);box-shadow:0 20px 60px rgba(2,6,23,0.7)}
+  .candidate-card img{width:90px;height:90px;object-fit:contain;background:#fff;padding:8px;border-radius:12px;margin:0 auto 10px}
+  .candidate-card h3{margin:6px 0}
+  .vote-btn{background:#0b1220;color:var(--accent1);padding:10px;border-radius:8px;width:100%;font-weight:700;border:1px solid rgba(96,165,250,0.08)}
+  .controls{display:flex;gap:12px;justify-content:center;margin-top:12px}
+  
+  .popup{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center}
+  .popup>div{background:#071226;padding:20px;border-radius:12px;color:var(--accent1)}
+  
+  /* responsive */
+  @media(max-width:900px){
+    .hero{flex-direction:column;gap:18px;padding:20px}
+    .hero-visual{width:100%;height:120px}
+  }
+  @media(max-width:600px){
+    main{margin:12px}
+    .candidate-card img{width:70px;height:70px}
+  }
+  
