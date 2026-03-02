@@ -2,125 +2,380 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EzeeVote — Smart Online Voting</title>
-
-  <!-- Google Identity Services -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EzeeVote Dashboard</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <!-- Styles -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
-
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="logo">
-      <div class="logo-blob"></div>
+  <header class="topbar">
+    <div class="brand">
+      <button id="mobile-menu-btn" class="btn ghost mobile-menu-btn" aria-label="Open Menu" aria-expanded="false">Menu</button>
+      <span class="brand-orb"></span>
       <h1>EzeeVote</h1>
+      <span id="role-badge" class="role-badge" style="display:none;">Admin</span>
     </div>
-    <div class="header-actions">
-      <button id="theme-toggle" class="theme-btn">🌙</button>
+    <div class="command-wrap">
+      <input id="command-input" placeholder="Quick command (e.g., results, profile, compare)" />
+      <button id="command-go" class="btn ghost">Go</button>
+    </div>
+    <div class="topbar-actions">
+      <select id="theme-preset" class="theme-select">
+        <option value="dark">Government Classic</option>
+        <option value="light">Modern Blue</option>
+        <option value="contrast">High Contrast</option>
+      </select>
+      <button id="theme-toggle" class="btn ghost">Theme</button>
+      <button id="notifications-btn" class="btn ghost">Notifications</button>
+      <button id="logout-btn" class="btn danger" style="display:none;">Logout</button>
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-inner">
-      <h2 class="hero-title">Secure • Fast • Transparent</h2>
-      <p class="hero-sub">
-        A high-tech online voting system powered by secure Google Sign-In.
-        No passwords. No OTP. Instant login with your Google account.
-      </p>
+  <div id="broadcast-banner" class="broadcast" style="display:none;"></div>
+  <div id="mobile-backdrop" class="mobile-backdrop" style="display:none;"></div>
 
-      <div class="hero-cta">
-        <button class="btn-primary" onclick="scrollToLogin()">Get Started</button>
-        <button class="btn-ghost" onclick="scrollToLogin()">Login</button>
-      </div>
-    </div>
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar" style="display:none;">
+      <button class="nav-btn active" data-view="dashboard-view">Dashboard</button>
+      <button class="nav-btn" data-view="profile-view">Profile Verification</button>
+      <button class="nav-btn" data-view="results-view">Results</button>
+      <button class="nav-btn" data-view="history-view">My History</button>
+      <button id="admin-nav-btn" class="nav-btn" data-view="admin-view" style="display:none;">Admin Studio</button>
+    </aside>
 
-    <div class="hero-visual" aria-hidden="true">
-      <div class="card-glow"></div>
-      <div class="chip-grid">
-        <div class="chip">VOTE</div>
-        <div class="chip">REAL-TIME</div>
-        <div class="chip">SECURE</div>
-      </div>
-    </div>
-  </section>
+    <main class="content">
+      <section id="login-view" class="panel login-panel">
+        <div class="premium-login-shell">
+          <div class="premium-hero">
+            <p class="premium-kicker">EzeeVote Private Platform</p>
+            <h2>Secure • Fast • Transparent</h2>
+            <p>A high-tech online voting system powered by secure Google Sign-In. No passwords. No OTP. Instant login.</p>
+            <div class="premium-cta-row">
+              <button id="login-get-started" class="btn primary" type="button">Get Started</button>
+              <button id="login-learn-more" class="btn ghost" type="button">Learn More</button>
+            </div>
+          </div>
+          <div class="premium-chip-row">
+            <span>VOTE</span>
+            <span>REAL-TIME</span>
+            <span>SECURE</span>
+          </div>
+          <article id="login-signin-card" class="premium-signin-card">
+            <h3>Sign in to Continue</h3>
+            <div id="google-btn"></div>
+            <p class="muted">Your email is never shared. Secure authentication provided by Google.</p>
+            <p class="muted"><strong>Support:</strong> janmejoymahato529@gmail.com</p>
+          </article>
+          <div id="login-more-panel" class="premium-more-panel" style="display:none;">
+            <div class="simple-item">
+              <strong>EzeeVote</strong>
+              <div class="muted">Private web platform for streamlined election operations and transparent digital voting.</div>
+            </div>
+            <div class="simple-item">
+              <strong>Highlights</strong>
+              <div class="muted">Candidate compare, smart analytics, real-time results, booth view, and profile-based voting flow.</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  <main>
+      <section id="profile-view" class="panel" style="display:none;">
+        <div class="panel-head">
+          <div>
+            <h2>Profile Verification</h2>
+            <p class="muted">Complete this one-time KYC step before voting.</p>
+          </div>
+          <span id="profile-status-pill" class="role-badge">Pending</span>
+        </div>
 
-    <!-- GOOGLE LOGIN CARD -->
-    <section id="login-section" class="card auth-card">
-      <h2 style="text-align:center; margin-bottom:20px;">Sign in to Continue</h2>
+        <div class="profile-grid">
+          <article class="profile-card">
+            <h3>Live Face Verification</h3>
+            <p class="muted">Start camera and capture your real-time face photo.</p>
+            <video id="profile-camera" autoplay playsinline muted></video>
+            <canvas id="profile-canvas" style="display:none;"></canvas>
+            <img id="profile-preview" alt="verification preview" style="display:none;" />
+            <div class="inline">
+              <button id="start-camera-btn" class="btn ghost" type="button">Start Camera</button>
+              <button id="capture-photo-btn" class="btn primary" type="button">Capture</button>
+              <button id="retake-photo-btn" class="btn ghost" type="button">Retake</button>
+            </div>
+            <p id="profile-photo-note" class="muted">No photo captured yet.</p>
+            <p id="profile-progress" class="muted">Profile completion: 0%</p>
+          </article>
 
-      <!-- GOOGLE LOGIN BUTTON -->
-      <div id="google-btn"></div>
-      <div style="display:flex; justify-content:center; margin:20px 0;"></div>
+          <article class="profile-card">
+            <h3>Identity Details</h3>
+            <form id="profile-form" class="form-grid">
+              <input id="profile-full-name" placeholder="Full name (as per ID)" required />
+              <div class="inline inline-two">
+                <input id="profile-phone" placeholder="Phone (10 digits)" maxlength="10" required />
+                <input id="profile-dob" type="date" required />
+              </div>
+              <select id="profile-gender" required>
+                <option value="">Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+              <input id="profile-address" placeholder="Address line" required />
+              <div class="inline inline-two">
+                <input id="profile-city" placeholder="City" required />
+                <input id="profile-state" placeholder="State" required />
+              </div>
+              <input id="profile-postal" placeholder="PIN code (6 digits)" maxlength="6" required />
+              <div class="inline inline-two">
+                <input id="profile-voter-card" placeholder="Voter Card (ABC1234567)" required />
+                <input id="profile-aadhaar" placeholder="Aadhaar (12 digits)" maxlength="12" required />
+              </div>
+              <button class="btn primary" type="submit">Submit Verification</button>
+            </form>
+          </article>
+        </div>
+      </section>
 
-      <p class="muted" style="text-align:center;">
-        Your email is never shared. Secure authentication provided by Google.
-      </p>
-    </section>
+      <section id="dashboard-view" class="panel" style="display:none;">
+        <div class="panel-head">
+          <div>
+            <h2>Election Dashboard</h2>
+            <p id="welcome-text" class="muted"></p>
+          </div>
+          <div class="inline">
+            <label class="muted" for="election-switcher">Election</label>
+            <select id="election-switcher"></select>
+          </div>
+        </div>
 
-    <!-- PROFILE -->
-    <section id="profile-section" class="card auth-card" style="display:none;">
-      <h2>My Profile</h2>
-      <img id="profile-photo" src="" alt="Profile" style="display:none" />
+        <div class="stats-grid">
+          <article class="stat-card"><span>Status</span><strong id="stat-status">-</strong></article>
+          <article class="stat-card"><span>Countdown</span><strong id="stat-countdown">-</strong></article>
+          <article class="stat-card"><span>Total Votes</span><strong id="stat-total-votes">0</strong></article>
+        </div>
+        <article class="lifecycle-bar">
+          <h3>Election Lifecycle</h3>
+          <div id="lifecycle-steps" class="lifecycle-steps"></div>
+        </article>
 
-      <h3 id="user-name" style="text-align:center;"></h3>
+        <div class="dashboard-dual">
+          <article class="panel spotlight-card">
+            <div class="section-head">
+              <h3>Candidate Spotlight</h3>
+              <div class="inline">
+                <button id="spotlight-prev" class="btn ghost">Prev</button>
+                <button id="spotlight-next" class="btn ghost">Next</button>
+              </div>
+            </div>
+            <div id="spotlight-content"></div>
+          </article>
+          <article class="panel watchlist-card">
+            <h3>Saved Candidates</h3>
+            <div id="watchlist-list" class="simple-list"></div>
+          </article>
+        </div>
 
-      <div class="controls">
-        <button onclick="showVoting()" class="btn-primary">Proceed to Vote</button>
-        <button onclick="logout()" class="btn-ghost">Logout</button>
-      </div>
-    </section>
+        <div class="section-head">
+          <h3>Candidates</h3>
+          <button id="refresh-dashboard-btn" class="btn ghost">Refresh</button>
+        </div>
+        <div id="candidates-list" class="candidate-grid"></div>
 
-    <!-- VOTING -->
-    <section id="voting-section" class="card" style="display:none;">
-      <h2>Cast Your Vote</h2>
-      <div id="candidates-list" class="candidates"></div>
+        <article class="panel qa-card">
+          <h3>Candidate Q&A</h3>
+          <div class="inline">
+            <input id="qa-search" placeholder="Search topic (economy, education, health...)" />
+            <button id="qa-search-btn" class="btn ghost">Search</button>
+          </div>
+          <div id="qa-results" class="simple-list"></div>
+        </article>
 
-      <div class="controls">
-        <button onclick="viewResults()" class="btn-ghost">View Results</button>
-        <button onclick="logout()" class="btn-ghost">Logout</button>
-      </div>
-    </section>
+        <article class="panel compare-card">
+          <div class="section-head">
+            <h3>Compare Candidates</h3>
+            <button id="compare-run-btn" class="btn primary">Compare</button>
+          </div>
+          <div class="inline inline-two">
+            <select id="compare-a"></select>
+            <select id="compare-b"></select>
+          </div>
+          <div id="compare-output" class="compare-output"></div>
+        </article>
 
-    <!-- RESULTS -->
-    <section id="results-section" class="card" style="display:none;">
-      <h2>Election Results</h2>
+        <article class="panel feedback-card">
+          <h3>Public Feedback</h3>
+          <form id="feedback-form" class="form-grid">
+            <select id="feedback-category" required>
+              <option value="">Select category</option>
+              <option value="Portal UX">Portal UX</option>
+              <option value="Election Process">Election Process</option>
+              <option value="Candidate Information">Candidate Information</option>
+              <option value="Accessibility">Accessibility</option>
+              <option value="Other">Other</option>
+            </select>
+            <textarea id="feedback-message" placeholder="Share your suggestion or issue..." required></textarea>
+            <button class="btn primary" type="submit">Submit Feedback</button>
+          </form>
+        </article>
+      </section>
 
-      <canvas id="resultsChart" style="width:100%; max-width:650px; height:300px;"></canvas>
+      <section id="results-view" class="panel" style="display:none;">
+        <div class="section-head">
+          <h2>Results</h2>
+          <button id="download-results-btn" class="btn primary">Export CSV</button>
+        </div>
+        <div class="inline">
+          <label for="story-stage" class="muted">Result Story Mode</label>
+          <select id="story-stage">
+            <option value="early">Early Trends</option>
+            <option value="mid">Mid Count</option>
+            <option value="final">Final Count</option>
+          </select>
+          <span id="story-label" class="muted"></span>
+        </div>
+        <div class="chart-grid">
+          <article class="chart-card">
+            <h3>Vote Count by Candidate</h3>
+            <canvas id="resultsChart"></canvas>
+          </article>
+        </div>
+        <article class="chart-card">
+          <h3>Constituency Booth View</h3>
+          <div id="booth-map" class="booth-grid"></div>
+        </article>
+        <table id="results-table" class="table"></table>
+      </section>
 
-      <table id="results-table"></table>
+      <section id="history-view" class="panel" style="display:none;">
+        <h2>My Voting History</h2>
+        <article class="panel journey-card">
+          <h3>Voter Journey Timeline</h3>
+          <div id="journey-timeline" class="journey-timeline"></div>
+        </article>
+        <div id="history-list" class="history-list"></div>
+      </section>
 
-      <button onclick="showVoting()" class="btn-primary" style="margin-top:15px;">
-        Back to Voting
-      </button>
-    </section>
+      <section id="admin-view" class="panel" style="display:none;">
+        <h2>Admin Studio</h2>
 
-  </main>
+        <div class="admin-grid">
+          <article class="admin-card">
+            <h3>Create Candidate</h3>
+            <form id="candidate-create-form" class="form-grid">
+              <input id="candidate-name" placeholder="Candidate name" required />
+              <input id="candidate-party" placeholder="Party" required />
+              <input id="candidate-symbol" placeholder="Election symbol (e.g., Lotus)" />
+              <input id="candidate-image" placeholder="Image filename or URL" />
+              <input id="candidate-manifesto" placeholder="Manifesto URL" />
+              <textarea id="candidate-bio" placeholder="Short bio"></textarea>
+              <button class="btn primary" type="submit">Create</button>
+            </form>
+          </article>
 
-  <!-- POPUP -->
-  <div id="popup" class="popup" style="display:none;">
-    <div>
-      <div id="popup-message"></div>
-      <button onclick="closePopup()" class="btn-primary" style="margin-top:10px;">OK</button>
+          <article class="admin-card">
+            <h3>Create Election</h3>
+            <form id="election-create-form" class="form-grid">
+              <input id="election-title" placeholder="Election title" required />
+              <input id="election-description" placeholder="Description" />
+              <input id="election-start" type="datetime-local" />
+              <input id="election-end" type="datetime-local" />
+              <select id="election-status">
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+                <option value="closed">Closed</option>
+              </select>
+              <select id="election-candidates" multiple size="5"></select>
+              <button class="btn primary" type="submit">Create Election</button>
+            </form>
+          </article>
+
+          <article class="admin-card">
+            <h3>Broadcast Message</h3>
+            <form id="broadcast-form" class="form-grid">
+              <textarea id="broadcast-message" placeholder="Election announcement"></textarea>
+              <button class="btn primary" type="submit">Publish Broadcast</button>
+            </form>
+            <div id="broadcast-list" class="simple-list"></div>
+          </article>
+
+          <article class="admin-card">
+            <h3>Bulk Import Candidates (CSV)</h3>
+            <textarea id="candidate-csv" placeholder="name,party,symbol,image,bio,manifesto_url"></textarea>
+            <button id="import-csv-btn" class="btn primary">Import CSV</button>
+          </article>
+        </div>
+
+        <div class="section-head">
+          <h3>Manage Elections</h3>
+          <div class="inline">
+            <input id="admin-election-search" placeholder="Search elections" />
+            <select id="admin-election-status-filter">
+              <option value="">All status</option>
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="closed">Closed</option>
+            </select>
+            <label class="inline"><input id="admin-show-archived" type="checkbox" /> Archived</label>
+            <button id="admin-election-filter-btn" class="btn ghost">Apply</button>
+            <button id="admin-bulk-close" class="btn ghost">Bulk Close</button>
+            <button id="admin-bulk-archive" class="btn ghost">Bulk Archive</button>
+            <button id="admin-bulk-unarchive" class="btn ghost">Bulk Unarchive</button>
+          </div>
+        </div>
+        <div id="admin-elections-list" class="stack-list"></div>
+        <div class="pager">
+          <button id="admin-elections-prev" class="btn ghost">Prev</button>
+          <span id="admin-elections-page">1</span>
+          <button id="admin-elections-next" class="btn ghost">Next</button>
+        </div>
+
+        <div class="section-head">
+          <h3>Manage Candidates</h3>
+          <div class="inline">
+            <input id="admin-candidate-search" placeholder="Search candidates" />
+            <button id="admin-candidate-filter-btn" class="btn ghost">Apply</button>
+          </div>
+        </div>
+        <div id="admin-candidates-list" class="stack-list"></div>
+        <div class="pager">
+          <button id="admin-candidates-prev" class="btn ghost">Prev</button>
+          <span id="admin-candidates-page">1</span>
+          <button id="admin-candidates-next" class="btn ghost">Next</button>
+        </div>
+
+        <h3>Activity Feed</h3>
+        <div id="admin-activity" class="simple-list"></div>
+
+        <article class="panel">
+          <div class="section-head">
+            <h3>Admin Feedback Queue</h3>
+            <button id="admin-feedback-refresh" class="btn ghost">Refresh</button>
+          </div>
+          <div id="admin-feedback-list" class="stack-list"></div>
+        </article>
+
+        <article class="panel">
+          <h3>Admin Activity Analytics</h3>
+          <canvas id="adminActivityChart"></canvas>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div id="candidate-modal" class="modal" style="display:none;">
+    <div class="modal-card">
+      <button id="candidate-modal-close" class="btn ghost">Close</button>
+      <img id="modal-image" alt="candidate" />
+      <h3 id="modal-name"></h3>
+      <p id="modal-party" class="muted"></p>
+      <p id="modal-bio"></p>
+      <a id="modal-manifesto" target="_blank" rel="noopener" href="#" style="display:none;">Read Manifesto</a>
+      <button id="modal-vote-btn" class="btn primary">Vote for Candidate</button>
     </div>
   </div>
 
-  <!-- SCRIPTS -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <div id="toast" class="toast" style="display:none;"></div>
+  <div id="notifications-panel" class="notify-panel" style="display:none;"></div>
+
   <script src="app.js"></script>
-
-  <script>
-    function scrollToLogin() {
-      document.getElementById("login-section").scrollIntoView({ behavior: "smooth" });
-    }
-  </script>
-
 </body>
 </html>
