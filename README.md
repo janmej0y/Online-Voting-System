@@ -1,98 +1,153 @@
+# EzeeVote Online Voting System 🗳️
 
-# EzeeVote — Online Voting System
+A modern online voting platform with secure sign-in, profile verification, election lifecycle management, and an admin control studio.
 
-A simple, secure online voting system with **registration**, **login**, **one-vote-per-user** enforcement, and **live results**. Built with **Node.js + Express + SQLite** and a clean **Tailwind (CDN)** frontend.
+## 🚀 Why This Project
+EzeeVote is designed to make digital elections easier to run and easier to trust.
 
-## Features
-- New user desk (registration). Unique email prevents re-registering.
-- Login with JWT auth (stored client-side).
-- List of candidates with photos and parties.
-- Cast exactly one vote per account (enforced in DB).
-- Live results aggregation.
-- Vibrant, professional UI.
+It includes:
+- Citizen voting flow with one-vote-per-election enforcement
+- Admin tools to create/manage elections and candidates
+- Live results dashboards, CSV export, and activity logs
+- Profile verification (KYC-style) before voting
 
-## Tech
-- Backend: Node.js, Express, SQLite3, bcryptjs, jsonwebtoken
-- Frontend: HTML + Tailwind (CDN) + vanilla JS
-- Database: SQLite (file-based) for easy setup. For production scale, use **PostgreSQL**; see notes below.
+## ✨ Core Features
+- 🔐 Google Sign-In authentication (JWT-based session)
+- 🧾 Profile verification with live photo capture and identity details
+- 🗳️ Election lifecycle support: `draft`, `active`, `closed`, `archived`
+- 👥 Candidate management (single create, edit, and CSV bulk import)
+- 📢 Broadcast announcements for all users
+- 📊 Real-time results, charts, and CSV export
+- 🧠 Candidate compare + spotlight + watchlist UX
+- 📝 Public feedback module and admin feedback queue
+- 🧷 Vote receipts and user voting history timeline
+- 🛡️ Admin activity logging for traceability
 
-## Quick Start
+## 🧱 Tech Stack
+- Frontend: HTML, CSS, Vanilla JavaScript, Chart.js, Google Identity Services
+- Backend: Node.js, Express, JWT, Multer, Google Auth Library
+- Database: SQLite (`backend/voting.db`) with migration system
 
-1. **Install Node.js** (v18+ recommended).
-
-2. Open a terminal in `backend/` and install packages:
-   ```bash
-   cd backend
-   npm install
-   ```
-
-3. (Optional) set a stronger JWT secret:
-   ```bash
-   export JWT_SECRET="super-strong-secret"
-   ```
-   On Windows (Powershell):
-   ```powershell
-   setx JWT_SECRET "super-strong-secret"
-   ```
-
-4. **Run the server** (serves the frontend too):
-   ```bash
-   npm start
-   ```
-
-5. Visit **http://localhost:3000** in your browser.
-
-## Where to put your GitHub & LinkedIn links
-Open `frontend/index.html` and replace the placeholders:
-```html
-<a id="githubLink" href="YOUR_GITHUB_URL" ...>GitHub</a>
-<a id="linkedinLink" href="YOUR_LINKEDIN_URL" ...>LinkedIn</a>
+## 📁 Project Structure
+```text
+Online-Voting-System/
+|- frontend/
+|  |- index.html
+|  |- app.js
+|  |- styles.css
+|  `- images/
+|- backend/
+|  |- server.js
+|  |- db.js
+|  |- scripts/migrate.js
+|  |- migrations/
+|  `- voting.db
+|- .env.example
+`- README.md
 ```
 
-## How it works
+## ⚙️ Environment Variables
+Create `backend/.env` (or copy from `.env.example`) with:
 
-### Database schema
-- `users` (id, name, email UNIQUE, password_hash, created_at)
-- `candidates` (id, name, party, avatar_url) — auto-seeded with 3 sample candidates
-- `votes` (id, user_id UNIQUE, candidate_id, created_at)
-
-The `user_id UNIQUE` in `votes` guarantees **one vote per user** at the database level.
-
-### API endpoints
-- `POST /api/register` – create account; blocks duplicate emails
-- `POST /api/login` – returns JWT token
-- `GET /api/me` – current user profile (requires Bearer token)
-- `GET /api/status` – has the user voted? (requires token)
-- `GET /api/candidates` – list candidates
-- `POST /api/vote` – cast vote (requires token); prevents duplicates
-- `GET /api/results` – aggregated votes per candidate
-
-### Switching to PostgreSQL (recommended for production)
-SQLite is perfect for development and single-machine deployments. If you expect **concurrent writes at scale** or need **cloud hosting**, move to **PostgreSQL**. Minimal changes:
-- Replace `sqlite3` dependency with `pg` (node-postgres).
-- Update `db.js` to create a `Pool` and run the same SQL with PostgreSQL syntax (almost identical here).
-- Ensure unique constraints and foreign keys are preserved.
-- Use a managed Postgres service (e.g., Railway, Supabase, Render) and set `DATABASE_URL` env var.
-
-### Security notes
-- Passwords are hashed with **bcrypt** (10 rounds). Never store plain text passwords.
-- JWT expires in 7 days; store it in `localStorage` for this demo (consider using HttpOnly cookies for higher security).
-- Use HTTPS in production and set a strong `JWT_SECRET`.
-- Add rate limiting and validation libraries if exposing publicly.
-
-## Folder structure
-```
-online-voting/
-├── backend/
-│   ├── package.json
-│   ├── server.js
-│   └── db.js
-└── frontend/
-    ├── index.html
-    ├── app.js
-    └── styles.css
+```env
+JWT_SECRET=your_generated_secret
+GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+ADMIN_EMAILS=admin1@example.com,admin2@example.com
+PORT=5000
 ```
 
----
+Notes:
+- `ADMIN_EMAILS` controls who gets admin access after Google login.
+- If `PORT=5000` is busy, backend auto-tries `5001` to `5005`.
 
-Built on 2025-08-30.
+## 🛠️ Local Setup
+1. Install dependencies for backend:
+```bash
+cd backend
+npm install
+```
+
+2. Run migrations (safe to run again):
+```bash
+npm run migrate
+```
+
+3. Start backend server:
+```bash
+npm start
+```
+
+4. Run frontend:
+- Open `frontend/index.html` using VS Code Live Server (recommended: `http://localhost:5500`).
+- The frontend auto-detects local API ports (`5000`, `5001`, `5002`).
+
+## ▶️ NPM Scripts (Backend)
+- `npm start` -> Run server
+- `npm run dev` -> Run with nodemon
+- `npm run migrate` -> Apply pending migrations
+
+## 🔄 Main User Flow
+1. User signs in with Google
+2. User completes profile verification
+3. Active election and candidates are loaded
+4. User votes once per election
+5. User can view history and receipt
+
+## 🧑‍💼 Admin Capabilities
+- Create/update/archive elections
+- Duplicate existing elections
+- Assign candidates to elections
+- Create/edit/import candidates from CSV
+- View election and platform analytics
+- Publish/deactivate broadcast banners
+- Review/update feedback status
+- Export election results as CSV
+
+## 🔌 API Snapshot
+Public/User:
+- `POST /api/google-login`
+- `GET /api/me`
+- `POST /api/profile/verification`
+- `GET /api/elections`
+- `GET /api/elections/active`
+- `POST /api/elections/:id/vote`
+- `GET /api/results`
+- `POST /api/feedback`
+
+Admin:
+- `POST /api/admin/elections`
+- `PUT /api/admin/elections/:id/status`
+- `POST /api/admin/candidates`
+- `POST /api/admin/candidates/import`
+- `GET /api/admin/elections/:id/results.csv`
+- `GET /api/admin/activity`
+- `POST /api/admin/broadcasts`
+
+## 🔒 Security Notes
+- JWT authentication with expiry
+- One vote per user per election enforced in DB constraints
+- Admin route protection via `is_admin`
+- Identity details + verification photo required before voting
+- Prefer strong `JWT_SECRET` and HTTPS in production
+
+## 🗺️ Roadmap
+- [x] Google authentication
+- [x] Election lifecycle + admin management
+- [x] Candidate import/export tooling
+- [x] Profile verification before voting
+- [x] Feedback + broadcast system
+- [ ] OTP / MFA support
+- [ ] Email or SMS election notifications
+- [ ] Full audit report download (PDF)
+- [ ] Role granularity (super-admin, moderator)
+- [ ] Automated tests and CI pipeline
+- [ ] Dockerized one-command deployment
+
+## 🤝 Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit with clear messages
+4. Open a pull request with a short demo and test notes
+
+## 📄 License
+No license file is currently configured. Add one before public distribution.
