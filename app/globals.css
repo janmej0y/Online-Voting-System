@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 40%;
+    --accent: 172 66% 50%;
+    --accent-foreground: 222 47% 11%;
+    --border: 214 32% 88%;
+    --input: 214 32% 88%;
+    --ring: 221 83% 53%;
+  }
+
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 213 31% 91%;
+    --card: 222 40% 11%;
+    --card-foreground: 213 31% 91%;
+    --popover: 222 40% 11%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 223 30% 16%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 223 26% 18%;
+    --muted-foreground: 215 20% 68%;
+    --accent: 172 66% 50%;
+    --accent-foreground: 222 47% 11%;
+    --border: 223 25% 20%;
+    --input: 223 25% 20%;
+    --ring: 217 91% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    font-family: var(--font-sans), sans-serif;
+    background-image:
+      radial-gradient(circle at top left, rgba(45, 212, 191, 0.08), transparent 22%),
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.09), transparent 20%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 25%);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), serif;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media print {
+    body {
+      background: white !important;
+      color: black !important;
+    }
+
+    header,
+    .no-print {
+      display: none !important;
+    }
+
+    .print-surface {
+      box-shadow: none !important;
+      border: 1px solid #d4d4d8 !important;
+      background: white !important;
+    }
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .section-divider {
+    position: relative;
+  }
+
+  .section-divider::after {
+    content: "";
+    display: block;
+    margin-top: 1.5rem;
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
+  }
+
+  .review-marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+
+  .review-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: review-marquee-right 28s linear infinite;
+  }
+
+  .review-marquee:hover .review-marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes review-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0%);
+  }
+}

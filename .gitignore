@@ -1,2 +1,6 @@
 node_modules
 .env
+.next
+out
+dist
+.env.local

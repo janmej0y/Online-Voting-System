@@ -1,153 +1,101 @@
-# EzeeVote Online Voting System 🗳️
+# EzeeVote Online Voting System
 
-A modern online voting platform with secure sign-in, profile verification, election lifecycle management, and an admin control studio.
+EzeeVote is now structured as a full Next.js App Router project using TypeScript and TailwindCSS.
 
-## 🚀 Why This Project
-EzeeVote is designed to make digital elections easier to run and easier to trust.
+The old static frontend based on `frontend/index.html`, `frontend/app.js`, and `frontend/styles.css` is no longer part of the active application. The active UI now lives in the root Next.js app.
 
-It includes:
-- Citizen voting flow with one-vote-per-election enforcement
-- Admin tools to create/manage elections and candidates
-- Live results dashboards, CSV export, and activity logs
-- Profile verification (KYC-style) before voting
+## Current structure
 
-## ✨ Core Features
-- 🔐 Google Sign-In authentication (JWT-based session)
-- 🧾 Profile verification with live photo capture and identity details
-- 🗳️ Election lifecycle support: `draft`, `active`, `closed`, `archived`
-- 👥 Candidate management (single create, edit, and CSV bulk import)
-- 📢 Broadcast announcements for all users
-- 📊 Real-time results, charts, and CSV export
-- 🧠 Candidate compare + spotlight + watchlist UX
-- 📝 Public feedback module and admin feedback queue
-- 🧷 Vote receipts and user voting history timeline
-- 🛡️ Admin activity logging for traceability
-
-## 🧱 Tech Stack
-- Frontend: HTML, CSS, Vanilla JavaScript, Chart.js, Google Identity Services
-- Backend: Node.js, Express, JWT, Multer, Google Auth Library
-- Database: SQLite (`backend/voting.db`) with migration system
-
-## 📁 Project Structure
 ```text
 Online-Voting-System/
-|- frontend/
-|  |- index.html
-|  |- app.js
-|  |- styles.css
-|  `- images/
-|- backend/
-|  |- server.js
-|  |- db.js
-|  |- scripts/migrate.js
-|  |- migrations/
-|  `- voting.db
+|- app/
+|- components/
+|- lib/
 |- .env.example
+|- .env.local.example
+|- next.config.ts
+|- tailwind.config.ts
+|- tsconfig.json
+|- package.json
 `- README.md
 ```
 
-## ⚙️ Environment Variables
-Create `backend/.env` (or copy from `.env.example`) with:
+## Run the project
+
+```bash
+npm install
+npm run dev
+```
+
+## Firebase environment variables
+
+Use `.env.local` for your local Next.js environment. Start from `.env.local.example`.
 
 ```env
-JWT_SECRET=your_generated_secret
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-ADMIN_EMAILS=admin1@example.com,admin2@example.com
-PORT=5000
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+JWT_SECRET=your_server_side_jwt_secret
+FIREBASE_ADMIN_PROJECT_ID=your-project-id
+FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 
-Notes:
-- `ADMIN_EMAILS` controls who gets admin access after Google login.
-- If `PORT=5000` is busy, backend auto-tries `5001` to `5005`.
+## Notes
 
-## 🛠️ Local Setup
-1. Install dependencies for backend:
-```bash
-cd backend
-npm install
+- HTML is now represented by React components and App Router pages.
+- CSS is now handled through TailwindCSS and `app/globals.css`.
+- The current landing/dashboard UI is in `app/page.tsx` with reusable components under `components/`.
+- The dashboard subscribes to Firestore document `dashboard/public`.
+- Voting is enforced server-side through `app/api/vote/route.ts`.
+- Cross-device one-vote-per-user uses Firestore `votes` documents keyed by `{electionId}_{userId}`.
+- Every accepted vote writes an `auditLogs` document.
+
+## Firestore document shape
+
+Create a document at `dashboard/public` with this shape:
+
+```ts
+{
+  election: {
+    id: "lok-sabha-2026",
+    title: "National Election 2026",
+    status: "active", // draft | active | closed
+    allowVoting: true
+  },
+  updatedAt: "2026-03-10T21:00:00.000Z",
+  stats: [{ label: "Total Voters", value: "248,920", change: "+4.2% verified", tone: "primary" }],
+  candidates: [
+    {
+      id: "cand-1",
+      name: "Narendra Modi",
+      party: "Bharatiya Janata Party",
+      percentage: 38,
+      votes: 76534,
+      image: "/assets/Leaders/modi.jpg",
+      symbol: "/assets/party-symbols/bjp.png"
+    }
+  ],
+  adminTasks: [
+    { title: "Manage Elections", description: "Create and manage election cycles.", status: "12 active boards" }
+  ],
+  liveFeed: [{ region: "North District", turnout: 84, ballots: 42318 }]
+}
 ```
 
-2. Run migrations (safe to run again):
-```bash
-npm run migrate
-```
+## Firestore collections added in Phase 1
 
-3. Start backend server:
-```bash
-npm start
-```
+- `dashboard/public`: public dashboard state and active election metadata
+- `votes/{electionId}_{userId}`: one persistent vote record per user per election
+- `auditLogs/{autoId}`: append-only vote activity log
 
-4. Run frontend:
-- Open `frontend/index.html` using VS Code Live Server (recommended: `http://localhost:5500`).
-- The frontend auto-detects local API ports (`5000`, `5001`, `5002`).
+## Rules
 
-## ▶️ NPM Scripts (Backend)
-- `npm start` -> Run server
-- `npm run dev` -> Run with nodemon
-- `npm run migrate` -> Apply pending migrations
+Deploy [firestore.rules](/c:/Users/Main/Desktop/Online-Voting-System/firestore.rules) so:
 
-## 🔄 Main User Flow
-1. User signs in with Google
-2. User completes profile verification
-3. Active election and candidates are loaded
-4. User votes once per election
-5. User can view history and receipt
-
-## 🧑‍💼 Admin Capabilities
-- Create/update/archive elections
-- Duplicate existing elections
-- Assign candidates to elections
-- Create/edit/import candidates from CSV
-- View election and platform analytics
-- Publish/deactivate broadcast banners
-- Review/update feedback status
-- Export election results as CSV
-
-## 🔌 API Snapshot
-Public/User:
-- `POST /api/google-login`
-- `GET /api/me`
-- `POST /api/profile/verification`
-- `GET /api/elections`
-- `GET /api/elections/active`
-- `POST /api/elections/:id/vote`
-- `GET /api/results`
-- `POST /api/feedback`
-
-Admin:
-- `POST /api/admin/elections`
-- `PUT /api/admin/elections/:id/status`
-- `POST /api/admin/candidates`
-- `POST /api/admin/candidates/import`
-- `GET /api/admin/elections/:id/results.csv`
-- `GET /api/admin/activity`
-- `POST /api/admin/broadcasts`
-
-## 🔒 Security Notes
-- JWT authentication with expiry
-- One vote per user per election enforced in DB constraints
-- Admin route protection via `is_admin`
-- Identity details + verification photo required before voting
-- Prefer strong `JWT_SECRET` and HTTPS in production
-
-## 🗺️ Roadmap
-- [x] Google authentication
-- [x] Election lifecycle + admin management
-- [x] Candidate import/export tooling
-- [x] Profile verification before voting
-- [x] Feedback + broadcast system
-- [ ] OTP / MFA support
-- [ ] Email or SMS election notifications
-- [ ] Full audit report download (PDF)
-- [ ] Role granularity (super-admin, moderator)
-- [ ] Automated tests and CI pipeline
-- [ ] Dockerized one-command deployment
-
-## 🤝 Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Commit with clear messages
-4. Open a pull request with a short demo and test notes
-
-## 📄 License
-No license file is currently configured. Add one before public distribution.
+- authenticated users can read the dashboard
+- vote writes are server-only
+- audit logs are server-only

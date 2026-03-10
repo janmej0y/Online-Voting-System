@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.email == "borj18237@gmail.com";
+    }
+
+    match /system/public {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /elections/{electionId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /votes/{voteId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /voters/{voterId} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == voterId);
+      allow write: if false;
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+  }
+}
