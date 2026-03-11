@@ -27,8 +27,8 @@ export function LiveResultsSection({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <SectionHeading
           eyebrow="Live Results"
-          title="Realtime vote count system UI with live constituency updates"
-          description="The interface refreshes vote totals and turnout movement in-place without pushing cards off screen or creating overflow."
+          title="Live results designed to be easy to scan in seconds"
+          description="Vote leaders, turnout movement, and district feed updates are grouped into clean blocks so users can understand the election picture immediately."
         />
         <div className="flex flex-wrap items-center gap-3">
           <Badge className="bg-emerald-500/10 text-emerald-500">Live Sync</Badge>
@@ -51,6 +51,20 @@ export function LiveResultsSection({
             </div>
           </CardHeader>
           <CardContent className="space-y-5">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Leading candidate</div>
+                <div className="mt-2 text-lg font-semibold">{candidates[0]?.name || "N/A"}</div>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Total ballots</div>
+                <div className="mt-2 text-lg font-semibold">{totalBallots.toLocaleString()}</div>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Active districts</div>
+                <div className="mt-2 text-lg font-semibold">{liveFeed.length}</div>
+              </div>
+            </div>
             {candidates.map((candidate, index) => (
               <motion.div
                 key={`${candidate.id}-${pulse}`}

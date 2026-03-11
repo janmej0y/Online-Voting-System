@@ -7,7 +7,7 @@ import { ThemeProvider } from "next-themes";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
       <LocaleProvider>
         <ToastProvider>
           <AuthProvider>{children}</AuthProvider>

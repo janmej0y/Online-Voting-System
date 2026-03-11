@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const heroPoints = [
-  "End-to-end audit visibility",
-  "Verified voter identity workflows",
-  "Live result reporting across constituencies"
+  "Simple step-by-step voting flow",
+  "Clear profile and document checks",
+  "Live results in one place"
 ];
 
 export function HeroSection({
@@ -30,13 +30,12 @@ export function HeroSection({
           className="space-y-8 rounded-[2rem] border border-border/80 bg-card/80 p-8 shadow-soft backdrop-blur-xl sm:p-10"
         >
           <div className="space-y-5">
-            <Badge className="bg-primary/10 text-primary">Election Command Center</Badge>
+            <Badge className="bg-primary/10 text-primary">Online Voting Portal</Badge>
             <h1 className="max-w-3xl text-balance text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-              Secure Digital Voting Built for Real Elections
+              Vote online with clear steps and simple guidance
             </h1>
             <p className="max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
-              Transparent voting workflows, verified access, live turnout visibility, and modern controls for
-              administrators who need reliability under pressure.
+              Complete your profile, verify your identity, cast your vote, and check the result without needing technical knowledge.
             </p>
           </div>
 
@@ -57,6 +56,18 @@ export function HeroSection({
               </div>
             ))}
           </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              { label: "Register", value: "Create profile" },
+              { label: "Verify", value: "Upload proof" },
+              { label: "Vote", value: "One final ballot" }
+            ].map((item) => (
+              <div key={item.label} className="rounded-2xl border border-border/70 bg-background/50 p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{item.label}</div>
+                <div className="mt-2 text-lg font-semibold">{item.value}</div>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
         <motion.div
@@ -69,8 +80,8 @@ export function HeroSection({
             <CardContent className="space-y-6 p-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Election Integrity</p>
-                  <p className="mt-2 text-3xl font-semibold">99.98%</p>
+                  <p className="text-sm text-muted-foreground">Easy to follow</p>
+                  <p className="mt-2 text-3xl font-semibold">5 steps</p>
                 </div>
                 <div className="flex size-12 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500">
                   <ShieldCheck className="size-6" />
@@ -78,8 +89,8 @@ export function HeroSection({
               </div>
               <div className="space-y-4">
                 <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-                  <div className="text-sm text-muted-foreground">Verified sessions</div>
-                  <div className="mt-2 text-2xl font-semibold">184,392</div>
+                  <div className="text-sm text-muted-foreground">Profile, verify, vote</div>
+                  <div className="mt-2 text-2xl font-semibold">One clear flow</div>
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
                   <div className="text-sm text-muted-foreground">Live turnout trend</div>

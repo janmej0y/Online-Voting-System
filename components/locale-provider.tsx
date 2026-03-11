@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-type Locale = "en" | "hi";
+type Locale = "en" | "hi" | "bn";
 
 const dictionary = {
   en: {
@@ -12,7 +12,8 @@ const dictionary = {
     results: "Results",
     proof: "Proof",
     menu: "Menu",
-    helpPrivacy: "Help & privacy"
+    helpPrivacy: "Help & privacy",
+    language: "Language"
   },
   hi: {
     profile: "प्रोफ़ाइल",
@@ -20,8 +21,19 @@ const dictionary = {
     vote: "मतदान",
     results: "परिणाम",
     proof: "प्रमाण",
-    menu: "मेनू",
-    helpPrivacy: "सहायता और गोपनीयता"
+    menu: "मेन्यू",
+    helpPrivacy: "सहायता और गोपनीयता",
+    language: "भाषा"
+  },
+  bn: {
+    profile: "প্রোফাইল",
+    verification: "যাচাই",
+    vote: "ভোট",
+    results: "ফলাফল",
+    proof: "প্রমাণ",
+    menu: "মেনু",
+    helpPrivacy: "সহায়তা ও গোপনীয়তা",
+    language: "ভাষা"
   }
 } satisfies Record<Locale, Record<string, string>>;
 
@@ -35,6 +47,20 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocale] = useState<Locale>("en");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("ezeevote-locale");
+    if (stored === "en" || stored === "hi" || stored === "bn") {
+      setLocale(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ezeevote-locale", locale);
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const value = useMemo<LocaleContextValue>(
     () => ({

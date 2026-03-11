@@ -19,8 +19,8 @@ export function CandidatesSection({
     <section id="candidates" className="container space-y-8 py-10">
       <SectionHeading
         eyebrow="Candidates"
-        title="Review candidate profiles before you cast a vote"
-        description="A structured ballot interface with clear party labels, live vote share visibility, and a reliable call to action on every screen size."
+        title="Review each candidate clearly before you choose"
+        description="The ballot now highlights vote share, constituency, manifesto access, and a single strong action so the decision flow stays simple on both desktop and mobile."
       />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {candidates.map((candidate, index) => (

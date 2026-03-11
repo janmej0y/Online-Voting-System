@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2 } from "lucide-react";
+import { Activity, ClipboardCheck, Pencil, ShieldCheck, Sparkles, Trash2, Users } from "lucide-react";
 
 import { useAuth } from "@/components/auth-provider";
 import { Navbar } from "@/components/navbar";
@@ -15,6 +15,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Candidate, Election, VoterRecord } from "@/lib/election-data";
+import { formatStatusLabel, getStatusTone } from "@/lib/utils";
 
 type ElectionWithAdminFields = Election & {
   createdAt?: string | null;
@@ -403,6 +404,15 @@ export function AdminPanel() {
     () => Array.from(new Set(voters.map((voter) => voter.constituencyId).filter(Boolean))).sort(),
     [voters]
   );
+  const queueCounts = useMemo(
+    () => ({
+      all: voters.length,
+      newRequests: voters.filter((voter) => voter.verificationStatus === "submitted").length,
+      pendingApproval: voters.filter((voter) => voter.status === "pending" || voter.verificationStatus === "under_review").length,
+      rejected: voters.filter((voter) => voter.status === "rejected" || voter.verificationStatus === "rejected").length
+    }),
+    [voters]
+  );
 
   if (loading || (user && !session && busy)) {
     return (
@@ -457,16 +467,55 @@ export function AdminPanel() {
     <>
       <Navbar />
       <main className="container space-y-6 py-8">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Admin control center</h1>
-            <p className="text-sm text-muted-foreground">
-              Restricted to {session?.adminEmail || "the configured admin"} with election management, candidate setup, analytics, and voter approvals.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge className="bg-emerald-500/10 text-emerald-500">Admin verified</Badge>
-            {activeElectionId ? <Badge>{`Active election: ${activeElectionId}`}</Badge> : null}
+        <div className="hero-gradient overflow-hidden rounded-[2rem] border border-white/10 p-8 text-white shadow-soft">
+          <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-4">
+              <Badge className="bg-white/10 text-white">Admin verified</Badge>
+              <div>
+                <h1 className="text-4xl font-semibold tracking-tight">Admin control center</h1>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/75">
+                  Restricted to {session?.adminEmail || "the configured admin"} with election management, candidate setup,
+                  analytics, and voter approvals in one operational workspace.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  { icon: ClipboardCheck, label: "New requests", value: queueCounts.newRequests },
+                  { icon: Users, label: "Approved voters", value: analytics?.summary.approvedVoters ?? 0 },
+                  { icon: Activity, label: "Total votes", value: analytics?.summary.totalVotes ?? 0 }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-white/60">
+                        <Icon className="size-4" />
+                        {item.label}
+                      </div>
+                      <div className="mt-3 text-3xl font-semibold">{item.value}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="grid gap-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-white/60">
+                  <ShieldCheck className="size-4" />
+                  Active election
+                </div>
+                <div className="mt-3 text-2xl font-semibold">{activeElectionId || "No active election"}</div>
+                <div className="mt-2 text-sm text-white/70">Use election operations below to activate, open, pause, or certify a board.</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-white/60">
+                  <Sparkles className="size-4" />
+                  Focus today
+                </div>
+                <div className="mt-3 text-sm leading-7 text-white/75">
+                  Process new verification requests first, then review turnout and anomalies before changing election state.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -628,9 +677,24 @@ export function AdminPanel() {
                 </select>
               </div>
 
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" className="rounded-full" onClick={() => { setStatusFilter("all"); setVerificationFilter("all"); }}>
+                  All requests ({queueCounts.all})
+                </Button>
+                <Button variant="outline" className="rounded-full" onClick={() => { setStatusFilter("all"); setVerificationFilter("submitted"); }}>
+                  New requests ({queueCounts.newRequests})
+                </Button>
+                <Button variant="outline" className="rounded-full" onClick={() => { setStatusFilter("pending"); setVerificationFilter("all"); }}>
+                  Pending approval ({queueCounts.pendingApproval})
+                </Button>
+                <Button variant="outline" className="rounded-full" onClick={() => { setStatusFilter("rejected"); setVerificationFilter("rejected"); }}>
+                  Rejected ({queueCounts.rejected})
+                </Button>
+              </div>
+
               <div className="space-y-3">
                 {paginatedVoters.map((voter) => (
-                  <div key={voter.uid} className="rounded-2xl border border-border/70 p-4">
+                  <div key={voter.uid} className="rounded-2xl border border-border/70 bg-background/50 p-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="font-medium">{voter.displayName || voter.email}</div>
@@ -645,12 +709,16 @@ export function AdminPanel() {
                             <div>{`Verification: ${voter.verificationStatus || "submitted"}`}</div>
                             <div>{`Document: ${voter.verification.documentType} ${voter.verification.documentNumberMasked}`}</div>
                             <div>{`Stored proof: ${voter.verification.documentUrl ? "attached" : "missing"}`}</div>
+                            {voter.verification.notes ? <div>{`Latest note: ${voter.verification.notes}`}</div> : null}
                           </div>
                         ) : null}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Badge className={voter.status === "approved" ? "bg-emerald-500/10 text-emerald-500" : voter.status === "rejected" ? "bg-rose-500/10 text-rose-500" : "bg-amber-500/10 text-amber-600"}>
-                          {voter.status}
+                        <Badge className={getStatusTone(voter.status)}>
+                          {formatStatusLabel(voter.status)}
+                        </Badge>
+                        <Badge className={getStatusTone(voter.verificationStatus)}>
+                          {formatStatusLabel(voter.verificationStatus || "unsubmitted")}
                         </Badge>
                         <Button variant="outline" disabled={busy} onClick={() => void runAdminAction(() => updateVoterStatus(voter.uid, "approved"), "Voter approved.")}>
                           Approve
@@ -672,7 +740,9 @@ export function AdminPanel() {
                   </div>
                 ))}
                 {filteredVoters.length === 0 ? (
-                  <div className="rounded-2xl border border-border/70 p-4 text-sm text-muted-foreground">No voters match the current filters.</div>
+                  <div className="rounded-2xl border border-border/70 p-4 text-sm text-muted-foreground">
+                    No voters match the current filters. Try `All requests` or clear one of the queue filters.
+                  </div>
                 ) : null}
               </div>
 

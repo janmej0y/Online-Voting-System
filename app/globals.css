@@ -18,6 +18,10 @@
     --muted-foreground: 215 16% 40%;
     --accent: 172 66% 50%;
     --accent-foreground: 222 47% 11%;
+    --success: 160 84% 32%;
+    --warning: 38 92% 50%;
+    --danger: 0 84% 60%;
+    --info: 221 83% 53%;
     --border: 214 32% 88%;
     --input: 214 32% 88%;
     --ring: 221 83% 53%;
@@ -38,6 +42,10 @@
     --muted-foreground: 215 20% 68%;
     --accent: 172 66% 50%;
     --accent-foreground: 222 47% 11%;
+    --success: 160 84% 40%;
+    --warning: 38 92% 58%;
+    --danger: 0 84% 68%;
+    --info: 217 91% 60%;
     --border: 223 25% 20%;
     --input: 223 25% 20%;
     --ring: 217 91% 60%;
@@ -55,9 +63,10 @@
     @apply min-h-screen bg-background text-foreground antialiased;
     font-family: var(--font-sans), sans-serif;
     background-image:
-      radial-gradient(circle at top left, rgba(45, 212, 191, 0.08), transparent 22%),
-      radial-gradient(circle at top right, rgba(59, 130, 246, 0.09), transparent 20%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 25%);
+      radial-gradient(circle at top left, rgba(45, 212, 191, 0.09), transparent 22%),
+      radial-gradient(circle at 85% 12%, rgba(59, 130, 246, 0.12), transparent 22%),
+      radial-gradient(circle at 50% 100%, rgba(250, 204, 21, 0.08), transparent 18%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 24%);
   }
 
   h1,
@@ -130,6 +139,46 @@
 
   .review-marquee:hover .review-marquee-track {
     animation-play-state: paused;
+  }
+
+  .glass-panel {
+    @apply border border-border/70 bg-card/80 shadow-soft backdrop-blur-xl;
+  }
+
+  .hero-gradient {
+    background:
+      radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 34%),
+      radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.18), transparent 28%),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.9));
+  }
+
+  .soft-grid {
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .spotlight-card {
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 28%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.72));
+  }
+
+  .status-success {
+    @apply border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300;
+  }
+
+  .status-warning {
+    @apply border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300;
+  }
+
+  .status-danger {
+    @apply border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300;
+  }
+
+  .status-info {
+    @apply border border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300;
   }
 }
 

@@ -38,11 +38,11 @@ type VoteProofState = {
 };
 
 const landingCards = [
-  { id: "profile", title: "Profile", detail: "Complete identity, address, and personal details.", href: "/profile" },
-  { id: "verification", title: "Verification", detail: "Review document readiness and approval state.", href: "/profile" },
-  { id: "vote", title: "Vote", detail: "Open the live ballot for your assigned constituency.", href: "#candidates" },
-  { id: "results", title: "Results", detail: "Track turnout and candidate distribution in real time.", href: "#results" },
-  { id: "proof", title: "Proof", detail: "Validate receipt tokens and download printable proof.", href: "#proof" }
+  { id: "profile", title: "1. Fill profile", detail: "Add your name, phone, age, and constituency.", href: "/profile" },
+  { id: "verification", title: "2. Upload proof", detail: "Add ID, address proof, and your photo.", href: "/profile" },
+  { id: "vote", title: "3. Vote", detail: "Open the ballot after your profile is approved.", href: "#candidates" },
+  { id: "results", title: "4. Results", detail: "See current vote counts and turnout.", href: "#results" },
+  { id: "proof", title: "5. Receipt", detail: "Check your receipt token after voting.", href: "#proof" }
 ] as const;
 
 const reviewCards = [
@@ -395,16 +395,35 @@ export function DashboardShell() {
 
         <HeroSection onStartVoting={() => scrollToSection("candidates")} onViewResults={() => scrollToSection("results")} />
 
+        <section className="container py-2">
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { title: "Register", detail: "Create your account and complete your voter profile." },
+              { title: "Verify", detail: "Upload proof documents and wait for admin approval." },
+              { title: "Vote", detail: "Once approved, open the ballot and cast your vote." }
+            ].map((item) => (
+              <Card key={item.title} className="spotlight-card">
+                <CardHeader>
+                  <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Journey</div>
+                  <CardTitle>{item.title}</CardTitle>
+                  <CardDescription>{item.detail}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </section>
+
         <section className="container section-divider py-2">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {landingCards.map((card) => (
               <button
                 key={card.id}
                 type="button"
-                className="rounded-[1.75rem] border border-border/70 bg-card/80 p-5 text-left shadow-soft transition hover:-translate-y-0.5 hover:bg-card"
+                className="rounded-[1.75rem] border border-border/70 bg-card/80 p-5 text-left shadow-soft transition hover:-translate-y-1 hover:border-primary/30 hover:bg-card"
                 onClick={() => (card.href.startsWith("#") ? scrollToSection(card.href.slice(1)) : router.push(card.href))}
               >
-                <div className="text-lg font-semibold">{card.title}</div>
+                <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Quick route</div>
+                <div className="mt-3 text-lg font-semibold">{card.title}</div>
                 <div className="mt-2 text-sm leading-6 text-muted-foreground">{card.detail}</div>
               </button>
             ))}
@@ -415,8 +434,8 @@ export function DashboardShell() {
           <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
             <Card className="print-surface">
               <CardHeader>
-                <CardTitle>Profile and verification summary</CardTitle>
-                <CardDescription>See completion status, approval state, and next actions the moment you land.</CardDescription>
+                <CardTitle>Your profile summary</CardTitle>
+                <CardDescription>See what is finished, what is pending, and what to do next.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
                 {profileLoading ? (
@@ -450,9 +469,9 @@ export function DashboardShell() {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                      <Button onClick={() => router.push("/profile")}>Open profile workspace</Button>
+                      <Button onClick={() => router.push("/profile")}>Open profile form</Button>
                       <Button variant="outline" onClick={() => scrollToSection("help")}>
-                        Help and privacy
+                        Need help?
                       </Button>
                     </div>
                   </>
@@ -464,12 +483,27 @@ export function DashboardShell() {
           </div>
         </section>
 
+        <section className="container py-2">
+          <div className="grid gap-4 lg:grid-cols-3">
+            {[
+              { label: "Trust layer", value: "Identity review before ballot access" },
+              { label: "Ballot model", value: "One verified voter, one final vote" },
+              { label: "After voting", value: "Receipt token and printable proof" }
+            ].map((item) => (
+              <div key={item.label} className="rounded-[1.75rem] border border-border/70 bg-card/80 p-5 shadow-soft">
+                <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">{item.label}</div>
+                <div className="mt-3 text-xl font-semibold">{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {cannotVoteReason ? (
           <section className="container py-2">
             <Card className="border-amber-500/20 bg-amber-500/5">
               <CardHeader>
-                <CardTitle>Why can&apos;t I vote?</CardTitle>
-                <CardDescription>The platform keeps voting locked until identity and eligibility checks are satisfied.</CardDescription>
+                <CardTitle>Why voting is locked</CardTitle>
+                <CardDescription>You can vote only after your identity and voter details are approved.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
                 <div className="flex gap-3 text-sm text-muted-foreground">
@@ -477,7 +511,7 @@ export function DashboardShell() {
                   <span>{cannotVoteReason}</span>
                 </div>
                 <Button variant="outline" onClick={() => router.push("/profile")}>
-                  Fix profile status
+                  Fix my profile
                 </Button>
               </CardContent>
             </Card>
@@ -535,9 +569,9 @@ export function DashboardShell() {
             <div className="mx-auto mt-12 max-w-xl rounded-[2rem] border border-border/70 bg-card/95 p-6 shadow-soft">
               <div className="space-y-3">
                 <Badge>Ballot review</Badge>
-                <h2 className="text-2xl font-semibold">Confirm your private ballot</h2>
+                <h2 className="text-2xl font-semibold">Confirm your vote</h2>
                 <p className="text-sm text-muted-foreground">
-                  Review the candidate, election, and constituency summary before you submit an irreversible vote.
+                  Review the candidate details carefully. After submitting, this vote cannot be changed.
                 </p>
               </div>
               <div className="mt-6 space-y-3 rounded-2xl border border-border/70 bg-background/60 p-4 text-sm">
@@ -607,7 +641,7 @@ export function DashboardShell() {
                 <CardTitle>Help and privacy</CardTitle>
               </div>
               <CardDescription>
-                This private platform verifies eligibility, records proof tokens, and supports audit checks without exposing how the ledger is validated to end users.
+                This platform checks voter eligibility, stores receipt tokens, and explains each step in a simple way.
               </CardDescription>
             </CardHeader>
           </Card>

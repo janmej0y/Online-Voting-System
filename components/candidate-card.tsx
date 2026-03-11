@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { ArrowRight, CheckCircle2, MapPin, ScrollText, Users2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,21 +48,48 @@ export function CandidateCard({
               <Image src={candidate.symbol} alt={`${candidate.party} symbol`} fill className="object-contain p-2" />
             </div>
           </div>
+          <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              <Users2 className="size-3.5" />
+              Public standing
+            </div>
+            <div className="mt-3 flex items-end justify-between gap-3">
+              <div>
+                <div className="text-3xl font-semibold tracking-tight">{candidate.percentage}%</div>
+                <div className="text-xs text-muted-foreground">Current share</div>
+              </div>
+              <div className="text-right text-sm text-muted-foreground">{candidate.votes.toLocaleString()} votes</div>
+            </div>
+          </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Vote share</span>
               <span className="font-medium">{candidate.percentage}%</span>
             </div>
             <Progress value={candidate.percentage} />
-            <div className="text-sm text-muted-foreground">{candidate.votes.toLocaleString()} votes counted</div>
+            <div className="grid gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-emerald-500" />
+                {candidate.votes.toLocaleString()} votes counted
+              </div>
+              {candidate.constituencyId && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="size-4 text-primary" />
+                  {candidate.constituencyId}
+                </div>
+              )}
+            </div>
             {candidate.constituencyId && (
-              <div className="text-xs text-muted-foreground">{`Constituency: ${candidate.constituencyId}`}</div>
+              <div className="hidden text-xs text-muted-foreground">{`Constituency: ${candidate.constituencyId}`}</div>
             )}
             {candidate.manifestoUrl && (
-              <Link href={candidate.manifestoUrl} target="_blank" className="text-xs font-medium text-primary">
+              <Link href={candidate.manifestoUrl} target="_blank" className="inline-flex items-center gap-2 text-xs font-medium text-primary">
+                <ScrollText className="size-4" />
                 View manifesto
+                <ArrowRight className="size-3.5" />
               </Link>
             )}
+            {candidate.bio ? <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{candidate.bio}</p> : null}
           </div>
           <Button className="mt-auto w-full" disabled={hasVoted} onClick={() => onVote(candidate)}>
             {isSelected ? "Vote recorded" : hasVoted ? "Already voted" : canVote ? "Vote now" : "Why can't I vote?"}

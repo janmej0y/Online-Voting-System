@@ -21,8 +21,13 @@ export function StatsGrid({ stats }: { stats: Stat[] }) {
             <Card className="h-full">
               <CardContent className="flex h-full flex-col justify-between gap-6 p-6">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{stat.label}</span>
-                  <div className="rounded-xl bg-secondary p-2">
+                  <div>
+                    <span className="text-sm text-muted-foreground">{stat.label}</span>
+                    <div className="mt-2 h-1.5 w-16 rounded-full bg-secondary">
+                      <div className={`h-1.5 rounded-full ${stat.tone === "primary" ? "w-10 bg-primary" : "w-12 bg-emerald-500"}`} />
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-secondary p-3">
                     {stat.tone === "primary" ? (
                       <Activity className="size-4 text-primary" />
                     ) : (
@@ -31,7 +36,7 @@ export function StatsGrid({ stats }: { stats: Stat[] }) {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-3xl font-semibold tracking-tight">{stat.value}</div>
+                  <div className="text-3xl font-semibold tracking-tight sm:text-4xl">{stat.value}</div>
                   <div className="text-sm text-muted-foreground">{stat.change}</div>
                 </div>
               </CardContent>

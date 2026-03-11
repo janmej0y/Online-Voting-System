@@ -282,7 +282,18 @@ export async function POST(request: Request) {
     );
 
     const saved = await voterRef.get();
-    return NextResponse.json({ voter: serializeVoter(saved.id, saved.data()) });
+    const savedData = saved.data();
+
+    if (user.email) {
+      void sendVerificationPendingAdminEmail({
+        adminEmail: ADMIN_EMAIL,
+        voterEmail: user.email,
+        voterName: body.displayName || savedData?.displayName || "",
+        constituencyId: body.constituencyId || savedData?.constituencyId || ""
+      }).catch(() => null);
+    }
+
+    return NextResponse.json({ voter: serializeVoter(saved.id, savedData) });
   } catch (error) {
     if (isFirestoreUnavailableError(error)) {
       return NextResponse.json(

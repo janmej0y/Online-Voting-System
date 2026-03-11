@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 
 export function Navbar({ onCommandScroll }: { onCommandScroll?: (id: string) => void }) {
   const { logout, user } = useAuth();
-  const { locale, setLocale, t } = useLocale();
+  const { t } = useLocale();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
@@ -74,14 +74,6 @@ export function Navbar({ onCommandScroll }: { onCommandScroll?: (id: string) => 
               ) : null}
             </div>
             <ThemeToggle />
-            <Button
-              variant="outline"
-              size="sm"
-              aria-label="Toggle language"
-              onClick={() => setLocale(locale === "en" ? "hi" : "en")}
-            >
-              {locale === "en" ? "EN" : "HI"}
-            </Button>
             <Button variant="outline" size="icon" aria-label="Notifications">
               <Bell className="size-4" />
             </Button>

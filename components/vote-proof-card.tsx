@@ -182,13 +182,27 @@ export function VoteProofCard({ vote }: { vote: VoteProofRecord | null }) {
                 <div className="text-xs uppercase tracking-[0.3em] text-sky-100/70">EzeeVote</div>
                 <CardTitle className="mt-2 text-3xl text-white">Private vote proof certificate</CardTitle>
                 <CardDescription className="text-sky-100/80">
-                  Colour certificate, officer block, validation state, and print-grade receipt presentation.
+                  Premium certificate layout with a visible seal, officer block, and print-ready proof for voter confidence.
                 </CardDescription>
               </div>
               <Badge className="border-white/15 bg-white/10 text-white">{validationState}</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-5 p-6">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Record state</div>
+                <div className="mt-2 text-lg font-semibold">Confirmed</div>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Certificate type</div>
+                <div className="mt-2 text-lg font-semibold">Private proof</div>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Export options</div>
+                <div className="mt-2 text-lg font-semibold">PDF and print</div>
+              </div>
+            </div>
             <div className="rounded-[1.8rem] border border-border/70 bg-gradient-to-br from-slate-50 via-sky-50 to-blue-100 p-6 text-slate-900">
               <div className="flex items-start justify-between gap-4">
                 <div>

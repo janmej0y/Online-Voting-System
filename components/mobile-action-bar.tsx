@@ -29,14 +29,14 @@ export function MobileActionBar({
 
   return (
     <div className="fixed inset-x-0 bottom-4 z-40 px-4 lg:hidden">
-      <div className="mx-auto flex max-w-md items-center justify-between rounded-2xl border border-border/70 bg-card/90 px-3 py-2 shadow-soft backdrop-blur-xl">
+      <div className="mx-auto flex max-w-md items-center justify-between rounded-3xl border border-border/70 bg-card/90 px-3 py-2 shadow-soft backdrop-blur-xl">
         {items.map((item) => {
           const Icon = iconMap[item.key];
           return (
             <button
               key={item.key}
               type="button"
-              className="flex min-w-0 flex-col items-center gap-1 rounded-xl px-3 py-2 text-[11px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              className="flex min-w-0 flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[11px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
               onClick={() => onNavigate(item.key)}
             >
               <Icon className="size-4" />

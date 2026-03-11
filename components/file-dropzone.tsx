@@ -18,10 +18,41 @@ type FileDropzoneProps = {
 export function FileDropzone({ label, description, value, onChange, accept = "image/*,.pdf" }: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [qualityMessage, setQualityMessage] = useState<string>("");
 
   async function handleFiles(fileList: FileList | null) {
     const file = fileList?.[0];
     if (!file) return;
+
+    if (file.type === "application/pdf") {
+      setQualityMessage(file.size > 6 * 1024 * 1024 ? "PDF selected. Large file, but usable." : "PDF selected and ready to submit.");
+    } else if (file.type.startsWith("image/")) {
+      const imageUrl = URL.createObjectURL(file);
+      const image = new window.Image();
+      image.onload = () => {
+        const tooSmall = image.width < 600 || image.height < 600;
+        const tooLarge = file.size > 5 * 1024 * 1024;
+        const probablyBlurred = file.size < 60 * 1024;
+        if (tooSmall) {
+          setQualityMessage("Image looks small. Use a clearer, larger photo if possible.");
+        } else if (probablyBlurred) {
+          setQualityMessage("Image may be blurry or compressed. Please check before submitting.");
+        } else if (tooLarge) {
+          setQualityMessage("Image is clear but large. It may upload a little slower.");
+        } else {
+          setQualityMessage("Image looks clear and ready to submit.");
+        }
+        URL.revokeObjectURL(imageUrl);
+      };
+      image.onerror = () => {
+        setQualityMessage("Image selected. Please make sure the text is readable.");
+        URL.revokeObjectURL(imageUrl);
+      };
+      image.src = imageUrl;
+    } else {
+      setQualityMessage("File selected.");
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") onChange(reader.result);
@@ -90,11 +121,23 @@ export function FileDropzone({ label, description, value, onChange, accept = "im
               <div className="rounded-2xl border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
                 Document preview is attached locally and will be submitted with your verification package.
               </div>
+              {qualityMessage ? (
+                <div className="rounded-2xl border border-sky-500/20 bg-sky-500/10 p-4 text-sm text-sky-700 dark:text-sky-300">
+                  {qualityMessage}
+                </div>
+              ) : null}
               <div className="flex flex-wrap gap-3">
                 <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
                   Replace file
                 </Button>
-                <Button type="button" variant="ghost" onClick={() => onChange("")}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setQualityMessage("");
+                    onChange("");
+                  }}
+                >
                   <X className="mr-2 size-4" />
                   Remove
                 </Button>

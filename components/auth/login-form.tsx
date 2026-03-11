@@ -65,27 +65,27 @@ export function LoginForm() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="space-y-8 rounded-[2rem] border border-border/70 bg-card/80 p-8 shadow-soft backdrop-blur-xl sm:p-10"
+          className="hero-gradient soft-grid space-y-8 rounded-[2rem] border border-white/10 p-8 text-white shadow-soft sm:p-10"
         >
           <div className="space-y-4">
-            <Badge className="bg-primary/10 text-primary">Secure Access</Badge>
+            <Badge className="bg-white/10 text-white">Secure Access</Badge>
             <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-              Sign in to EzeeVote with Google or verified email access
+              Secure access that feels clear, fast, and trustworthy
             </h1>
-            <p className="max-w-2xl text-base leading-8 text-muted-foreground">
-              Use Google for direct access or create an email account and verify it before entering the election dashboard.
+            <p className="max-w-2xl text-base leading-8 text-white/80">
+              Sign in with Google or verified email, confirm your account, and move directly into the guided voting flow.
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { title: "Google Auth", copy: "Fast sign-in for administrators and operators." },
-              { title: "Email Access", copy: "Password login with verification before dashboard access." },
-              { title: "Verification", copy: "Resend and refresh email verification status from the same screen." }
+              { title: "Fast entry", copy: "Google sign-in for quick access with less friction." },
+              { title: "Verified identity", copy: "Email users verify once, then access the full dashboard." },
+              { title: "Clear recovery", copy: "Reset password or resend verification without leaving this page." }
             ].map((item) => (
-              <div key={item.title} className="rounded-2xl border border-border/70 bg-background/50 p-4">
+              <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="font-medium">{item.title}</div>
-                <div className="mt-2 text-sm leading-6 text-muted-foreground">{item.copy}</div>
+                <div className="mt-2 text-sm leading-6 text-white/70">{item.copy}</div>
               </div>
             ))}
           </div>

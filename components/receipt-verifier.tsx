@@ -72,7 +72,7 @@ export function ReceiptVerifier({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <CardTitle>Vote receipt verification</CardTitle>
-              <CardDescription>Validate a signed vote receipt and inspect the current validation state without exposing the vote ledger.</CardDescription>
+              <CardDescription>Paste a receipt token to confirm that a vote record exists and is still valid.</CardDescription>
             </div>
             <Badge
               className={
@@ -89,6 +89,9 @@ export function ReceiptVerifier({
         </CardHeader>
         <CardContent className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
           <div className="space-y-4">
+            <div className="rounded-2xl border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
+              Use this tool when a voter wants to confirm their receipt token after voting or printing proof.
+            </div>
             <Textarea
               className="min-h-40 text-xs"
               placeholder="Paste receipt token"
